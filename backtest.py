@@ -3,12 +3,12 @@ from datetime import date, timedelta
 
 import backtrader as bt
 
-from signals import NeutralSignalProvider
+from signals import neutral_signal
 from strategy import SentimentStrategy
 from yahoo_api import get_stock_data
 
 
-def run_backtest(ticker="AAPL", start_date=None, end_date=None, cash=100000.0, commission=0.001, signal_provider=None):
+def run_backtest(ticker="AAPL", start_date=None, end_date=None, cash=100000.0, commission=0.001, signal_fn=None):
     end_date = end_date or date.today().isoformat()
     start_date = start_date or (date.today() - timedelta(days=365)).isoformat()
 
@@ -18,7 +18,7 @@ def run_backtest(ticker="AAPL", start_date=None, end_date=None, cash=100000.0, c
     data = bt.feeds.PandasData(dataname=df, name=ticker)
     cerebro.adddata(data)
 
-    cerebro.addstrategy(SentimentStrategy, signal_provider=signal_provider or NeutralSignalProvider())
+    cerebro.addstrategy(SentimentStrategy, signal_fn=signal_fn or neutral_signal)
 
     cerebro.broker.setcash(cash)
     cerebro.broker.setcommission(commission=commission)
