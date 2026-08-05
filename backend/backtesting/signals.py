@@ -4,6 +4,8 @@ from abc import ABC, abstractmethod
 
 import requests
 
+from online_sentiment import fetch_combined_sentiment
+
 
 class SignalProvider(ABC):
     """Interface between a strategy and whatever produces trade signals.
@@ -118,3 +120,39 @@ class LlamaCppSignalProvider(SignalProvider):
             match = re.search(r"-?\d+\.?\d*", content)
             value = float(match.group()) if match else 0.0
         return max(-1.0, min(1.0, value))
+
+
+class OnlineSentimentSignalProvider(SignalProvider):
+    """Trades on live Reddit + news sentiment via OpenAI web search and Perigon.
+
+    Unlike a historical Reddit dataset, this reflects sentiment *right now* —
+    it can't be replayed bar-by-bar over the past, so the same live score is
+    cached and reused for every date a backtest asks about a given ticker.
+    That makes this provider most meaningful for a live/paper-trading style
+    decision on the current day, not a multi-year historical sweep.
+    """
+
+    def __init__(self, openai_api_key, perigon_api_key, openai_model="gpt-5-mini",
+                 news_weight=0.4, reddit_weight=0.6):
+        self.openai_api_key = openai_api_key
+        self.perigon_api_key = perigon_api_key
+        self.openai_model = openai_model
+        self.news_weight = news_weight
+        self.reddit_weight = reddit_weight
+        self._cache = {}
+
+    def get_signal(self, ticker, date):
+        return self.get_detail(ticker)["score"]
+
+    def get_detail(self, ticker):
+        """Return the full news/reddit breakdown behind the cached signal."""
+        if ticker not in self._cache:
+            self._cache[ticker] = fetch_combined_sentiment(
+                ticker,
+                self.openai_api_key,
+                self.perigon_api_key,
+                openai_model=self.openai_model,
+                news_weight=self.news_weight,
+                reddit_weight=self.reddit_weight,
+            )
+        return self._cache[ticker]

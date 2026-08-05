@@ -2,3 +2,5 @@ backtrader
 yfinance
 pandas
 requests
+openai
+python-dotenv
