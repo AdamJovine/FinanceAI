@@ -1,39 +1,40 @@
 import backtrader as bt
 
-from signals import NeutralSignalProvider
+from signals import neutral_signal
 
 
 class SentimentStrategy(bt.Strategy):
-    """Trades a single feed based on a signal pulled from a SignalProvider.
+    """Trades a single feed based on a signal_fn(ticker, date, data) callable.
 
-    The provider is injected so the same strategy runs today (against the
+    The function is injected so the same strategy runs today (against the
     neutral placeholder) and later (against real Reddit-sentiment scores)
     with no changes here.
     """
 
     params = (
-        ("signal_provider", None),
+        ("signal_fn", None),
         ("buy_threshold", 0.5),
         ("sell_threshold", -0.5),
         ("stake_pct", 0.95),
     )
 
     def __init__(self):
-        self.signal_provider = self.p.signal_provider or NeutralSignalProvider()
+        self.signal_fn = self.p.signal_fn or neutral_signal
 
     def next(self):
-        date = self.datas[0].datetime.date(0)
-        ticker = self.datas[0]._name
-        signal = self.signal_provider.get_signal(ticker, date)
+        data = self.datas[0]
+        date = data.datetime.date(0)
+        ticker = data._name
+        signal = self.signal_fn(ticker, date, data)
 
-        position_size = self.getposition(self.datas[0]).size
+        position_size = self.getposition(data).size
 
         if signal >= self.p.buy_threshold and position_size == 0:
             cash = self.broker.get_cash()
-            price = self.datas[0].close[0]
+            price = data.close[0]
             size = int((cash * self.p.stake_pct) / price)
             if size > 0:
-                self.buy(data=self.datas[0], size=size)
+                self.buy(data=data, size=size)
 
         elif signal <= self.p.sell_threshold and position_size > 0:
-            self.close(data=self.datas[0])
+            self.close(data=data)
