@@ -1,3 +1,4 @@
 backtrader
 yfinance
 pandas
+requests
