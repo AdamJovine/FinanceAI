@@ -1,6 +1,13 @@
 import { useState } from 'react'
+import { SentimentSparkline, VolumeSparkline } from './Sparkline'
 
 const API_BASE = 'http://localhost:5001'
+
+function sentimentLabel(score) {
+  if (score >= 0.15) return 'bullish'
+  if (score <= -0.15) return 'bearish'
+  return 'neutral'
+}
 
 function SentimentView() {
   const [ticker, setTicker] = useState('')
@@ -67,6 +74,7 @@ function SentimentView() {
             <div className="stat">
               <span className="stat-value">{result.score}</span>
               <span className="stat-label">Sentiment score</span>
+              <span className="stat-caption">based on {result.confidence.toLocaleString()} mentions</span>
             </div>
             <div className="stat">
               <span className="stat-value">{result.mentions.toLocaleString()}</span>
@@ -85,6 +93,35 @@ function SentimentView() {
                   />
                 </div>
                 <span className="breakdown-value">{result.breakdown[key]}%</span>
+              </div>
+            ))}
+          </div>
+
+          <div className="charts">
+            <div className="chart-block">
+              <h3>14-day sentiment trend</h3>
+              <SentimentSparkline data={result.sentiment_history} />
+            </div>
+            <div className="chart-block">
+              <h3>14-day mention volume</h3>
+              <VolumeSparkline data={result.mention_volume_history} />
+            </div>
+          </div>
+
+          <div className="platform-breakdown">
+            <h3>By platform</h3>
+            {Object.entries(result.platform_breakdown).map(([platform, value]) => (
+              <div className="breakdown-row" key={platform}>
+                <span className="breakdown-label">{platform}</span>
+                <div className="bar-track">
+                  <div
+                    className={`bar-fill bar-${
+                      sentimentLabel(value) === 'bullish' ? 'positive' : sentimentLabel(value) === 'bearish' ? 'negative' : 'neutral'
+                    }`}
+                    style={{ width: `${Math.round(((value + 1) / 2) * 100)}%` }}
+                  />
+                </div>
+                <span className="breakdown-value">{value}</span>
               </div>
             ))}
           </div>

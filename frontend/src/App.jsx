@@ -8,6 +8,7 @@ function App() {
 
   return (
     <div className="app">
+      <div className="demo-banner">Simulated data for demo purposes — not real market or social data.</div>
       <nav className="nav">
         <button
           className={`nav-tab ${view === 'sentiment' ? 'active' : ''}`}

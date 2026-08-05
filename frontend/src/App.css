@@ -1,3 +1,13 @@
+.demo-banner {
+  text-align: center;
+  font-size: 13px;
+  font-weight: 600;
+  padding: 10px 16px;
+  background: var(--surface);
+  color: var(--text-muted);
+  border-bottom: 1px solid var(--border);
+}
+
 .nav {
   display: flex;
   justify-content: center;
@@ -163,6 +173,12 @@ h1 {
   font-size: 13px;
 }
 
+.stat-caption {
+  color: var(--text-muted);
+  font-size: 12px;
+  margin-top: 2px;
+}
+
 .breakdown {
   display: flex;
   flex-direction: column;
@@ -211,9 +227,55 @@ h1 {
   color: var(--text-muted);
 }
 
+.charts {
+  display: flex;
+  gap: 32px;
+  flex-wrap: wrap;
+  margin-bottom: 32px;
+}
+
+.chart-block {
+  flex: 1 1 240px;
+}
+
+.chart-block h3,
+.platform-breakdown h3,
 .posts h3 {
-  font-size: 16px;
-  margin: 0 0 12px;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text-muted);
+  margin: 0 0 10px;
+}
+
+.sparkline {
+  width: 100%;
+  height: auto;
+  display: block;
+}
+
+.sparkline-baseline {
+  stroke: var(--border);
+  stroke-width: 1;
+}
+
+.sparkline-line {
+  stroke: var(--accent);
+  stroke-width: 2;
+}
+
+.sparkline-dot {
+  fill: var(--accent);
+}
+
+.volume-bar {
+  fill: var(--neutral);
+}
+
+.platform-breakdown {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-bottom: 32px;
 }
 
 .posts ul {
