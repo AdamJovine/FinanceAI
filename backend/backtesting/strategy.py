@@ -20,12 +20,15 @@ class SentimentStrategy(bt.Strategy):
 
     def __init__(self):
         self.signal_fn = self.p.signal_fn or neutral_signal
+        self.equity_curve = []
 
     def next(self):
         data = self.datas[0]
         date = data.datetime.date(0)
         ticker = data._name
         signal = self.signal_fn(ticker, date, data)
+
+        self.equity_curve.append((date, self.broker.getvalue()))
 
         position_size = self.getposition(data).size
 
