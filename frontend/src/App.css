@@ -50,6 +50,49 @@ h1 {
   margin: 0 0 40px;
 }
 
+.page-simulated-note {
+  display: inline-block;
+  font-size: 12px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--text-muted);
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 100px;
+  padding: 6px 14px;
+  margin: 0 0 32px;
+}
+
+.holdings-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 24px 0 32px;
+  font-size: 14px;
+}
+
+.holdings-table th,
+.holdings-table td {
+  text-align: left;
+  padding: 8px 10px;
+  border-bottom: 1px solid var(--border);
+}
+
+.holdings-table th {
+  color: var(--text-muted);
+  font-weight: 600;
+  font-size: 12px;
+  text-transform: uppercase;
+}
+
+.gain-positive {
+  color: var(--positive);
+}
+
+.gain-negative {
+  color: var(--negative);
+}
+
 .search {
   display: flex;
   gap: 12px;

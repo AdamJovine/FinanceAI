@@ -2,6 +2,7 @@ import { useState } from 'react'
 import './App.css'
 import SentimentView from './SentimentView'
 import BacktestView from './BacktestView'
+import PortfolioView from './PortfolioView'
 
 function App() {
   const [view, setView] = useState('sentiment')
@@ -24,8 +25,16 @@ function App() {
         >
           Backtesting
         </button>
+        <button
+          className={`nav-tab ${view === 'portfolio' ? 'active' : ''}`}
+          onClick={() => setView('portfolio')}
+        >
+          My Portfolio
+        </button>
       </nav>
-      {view === 'sentiment' ? <SentimentView /> : <BacktestView />}
+      {view === 'sentiment' && <SentimentView />}
+      {view === 'backtesting' && <BacktestView />}
+      {view === 'portfolio' && <PortfolioView />}
     </div>
   )
 }
