@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { Activity, History, Briefcase } from 'lucide-react'
 import './App.css'
 import SentimentView from './SentimentView'
 import BacktestView from './BacktestView'
@@ -9,26 +10,26 @@ function App() {
 
   return (
     <div className="app">
-      <div className="demo-banner">
-        Some data is real (sentiment score, Reddit signal, price chart); other fields (trend history, mention volume, Twitter/StockTwits breakdown) are still simulated for demo purposes.
-      </div>
       <nav className="nav">
         <button
           className={`nav-tab ${view === 'sentiment' ? 'active' : ''}`}
           onClick={() => setView('sentiment')}
         >
+          <Activity size={15} />
           Sentiment
         </button>
         <button
           className={`nav-tab ${view === 'backtesting' ? 'active' : ''}`}
           onClick={() => setView('backtesting')}
         >
+          <History size={15} />
           Backtesting
         </button>
         <button
           className={`nav-tab ${view === 'portfolio' ? 'active' : ''}`}
           onClick={() => setView('portfolio')}
         >
+          <Briefcase size={15} />
           My Portfolio
         </button>
       </nav>
