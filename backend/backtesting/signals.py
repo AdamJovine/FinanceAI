@@ -4,6 +4,7 @@ import re
 import requests
 
 from online_sentiment import fetch_combined_sentiment
+from random_forest_model import train_and_predict
 
 POSITIVE_WORDS = {
     "buy", "bull", "bullish", "moon", "mooning", "rocket", "gain", "gains",
@@ -115,3 +116,23 @@ def online_signal(ticker, date, data, openai_api_key, perigon_api_key, openai_mo
             reddit_weight=reddit_weight,
         )
     return _online_sentiment_cache[ticker]["score"]
+
+
+_rf_model_cache = {}
+
+
+def rf_signal(ticker, date, data, openai_api_key, perigon_api_key, openai_model="gpt-5-mini"):
+    """Random-forest signal trained on Yahoo Finance technical/fundamental data
+    plus the sentiment model's score as one input feature (see random_forest_model.py).
+
+    Like online_signal, this trains once per ticker and caches the resulting
+    signal for every date a backtest asks about -- the sentiment and
+    fundamentals features are live/current snapshots, not point-in-time
+    historical ones. Bind the API keys with functools.partial before passing
+    this to the strategy as its signal_fn.
+    """
+    if ticker not in _rf_model_cache:
+        _rf_model_cache[ticker] = train_and_predict(
+            ticker, openai_api_key, perigon_api_key, openai_model=openai_model,
+        )
+    return _rf_model_cache[ticker]["score"]

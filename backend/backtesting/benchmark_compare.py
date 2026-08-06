@@ -1,7 +1,8 @@
+import argparse
 import json
 from datetime import date, timedelta
 
-from backtest import run_backtest
+from backtest import build_signal_fn, run_backtest
 from yahoo_api import get_stock_data
 
 
@@ -14,7 +15,7 @@ def compare_to_benchmark(ticker="AAPL", start_date=None, end_date=None, cash=100
     end_date = end_date or date.today().isoformat()
     start_date = start_date or (date.today() - timedelta(days=365)).isoformat()
 
-    cerebro, results = run_backtest(ticker, start_date, end_date, cash, commission, signal_fn)
+    cerebro, results = run_backtest(ticker, start_date, end_date, cash, commission, signal_fn, verbose=False)
     strat = results[0]
 
     strategy_dates = [d for d, _ in strat.equity_curve]
@@ -46,6 +47,27 @@ def compare_to_benchmark(ticker="AAPL", start_date=None, end_date=None, cash=100
     }
 
 
+def parse_args():
+    parser = argparse.ArgumentParser(
+        description="Run a backtest and print its equity curve indexed against a benchmark, as JSON."
+    )
+    parser.add_argument("--ticker", default="AAPL")
+    parser.add_argument("--start", default=None)
+    parser.add_argument("--end", default=None)
+    parser.add_argument("--cash", type=float, default=100000.0)
+    parser.add_argument("--commission", type=float, default=0.001)
+    parser.add_argument("--benchmark", default="SPY")
+    parser.add_argument("--signal-provider", choices=["neutral", "online", "rf"], default="neutral",
+                         help="'online' trades on live OpenAI web-search + Perigon sentiment; "
+                              "'rf' trades on a random forest over Yahoo Finance data + that sentiment score.")
+    return parser.parse_args()
+
+
 if __name__ == "__main__":
-    result = compare_to_benchmark()
-    print(json.dumps({k: v for k, v in result.items() if k not in ("dates", "strategy_indexed", "benchmark_indexed")}, indent=2))
+    args = parse_args()
+    signal_fn = build_signal_fn(args.signal_provider)
+    result = compare_to_benchmark(
+        args.ticker, args.start, args.end, args.cash, args.commission, signal_fn, args.benchmark
+    )
+    # Only line on stdout -- callers (e.g. the Express API route) JSON.parse this directly.
+    print(json.dumps(result))
