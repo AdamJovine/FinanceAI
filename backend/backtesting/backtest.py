@@ -7,7 +7,7 @@ from pathlib import Path
 import backtrader as bt
 from dotenv import load_dotenv
 
-from signals import neutral_signal, online_signal
+from signals import neutral_signal, online_signal, rf_signal
 from strategy import SentimentStrategy
 from yahoo_api import get_stock_data
 
@@ -17,13 +17,14 @@ ENV_PATH = Path(__file__).resolve().parents[2] / ".env"
 def build_signal_fn(name):
     if name == "neutral":
         return neutral_signal
-    if name == "online":
+    if name in ("online", "rf"):
         load_dotenv(ENV_PATH)
         openai_api_key = os.environ.get("OPENAI_API_KEY")
         perigon_api_key = os.environ.get("PERIGON_API_KEY")
         if not openai_api_key or not perigon_api_key:
             raise SystemExit("OPENAI_API_KEY and PERIGON_API_KEY must be set in .env")
-        return partial(online_signal, openai_api_key=openai_api_key, perigon_api_key=perigon_api_key)
+        fn = online_signal if name == "online" else rf_signal
+        return partial(fn, openai_api_key=openai_api_key, perigon_api_key=perigon_api_key)
     raise ValueError(f"Unknown signal provider: {name}")
 
 
@@ -70,8 +71,9 @@ def parse_args():
     parser.add_argument("--end", default=None)
     parser.add_argument("--cash", type=float, default=100000.0)
     parser.add_argument("--commission", type=float, default=0.001)
-    parser.add_argument("--signal-provider", choices=["neutral", "online"], default="neutral",
-                         help="'online' trades on live OpenAI web-search + Perigon sentiment.")
+    parser.add_argument("--signal-provider", choices=["neutral", "online", "rf"], default="neutral",
+                         help="'online' trades on live OpenAI web-search + Perigon sentiment; "
+                              "'rf' trades on a random forest over Yahoo Finance data + that sentiment score.")
     parser.add_argument("--plot", action="store_true", help="Render the backtrader chart after running.")
     return parser.parse_args()
 
