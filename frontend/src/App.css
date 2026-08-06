@@ -247,6 +247,29 @@ h1 {
   margin: 0 0 10px;
 }
 
+.source-tag {
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  font-weight: 700;
+}
+
+.source-tag-real {
+  color: var(--positive);
+}
+
+.source-tag-simulated {
+  color: var(--text-muted);
+}
+
+.source-tag-fallback_mock {
+  color: var(--negative);
+}
+
+.price-chart-block {
+  margin-bottom: 32px;
+}
+
 .sparkline {
   width: 100%;
   height: auto;
@@ -276,6 +299,16 @@ h1 {
   flex-direction: column;
   gap: 10px;
   margin-bottom: 32px;
+}
+
+.platform-breakdown .breakdown-row {
+  grid-template-columns: 130px 1fr 44px;
+}
+
+.breakdown-label {
+  display: flex;
+  align-items: center;
+  gap: 4px;
 }
 
 .posts ul {

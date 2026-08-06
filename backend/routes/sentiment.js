@@ -1,7 +1,29 @@
 const express = require('express');
+const { spawn } = require('child_process');
+const path = require('path');
 const router = express.Router();
 
-const KNOWN_TICKERS = ['GME', 'AMC', 'BB', 'BBBY', 'NOK', 'PLTR', 'TSLA', 'KOSS', 'EXPR', 'CLOV'];
+const PYTHON = process.platform === 'win32' ? 'py' : 'python3';
+const INVEST_SCRIPT = path.join(__dirname, '..', 'backtesting', 'invest.py');
+
+function runRealSentiment(ticker) {
+  return new Promise((resolve, reject) => {
+    const proc = spawn(PYTHON, [INVEST_SCRIPT, ticker, '--json']);
+    let stdout = '';
+    let stderr = '';
+    proc.stdout.on('data', (chunk) => (stdout += chunk));
+    proc.stderr.on('data', (chunk) => (stderr += chunk));
+    proc.on('close', (code) => {
+      if (code !== 0) return reject(new Error(stderr.trim() || `invest.py exited with code ${code}`));
+      try {
+        resolve(JSON.parse(stdout));
+      } catch (err) {
+        reject(new Error(`Could not parse model output: ${err.message}`));
+      }
+    });
+    proc.on('error', (err) => reject(new Error(`Could not run Python: ${err.message}`)));
+  });
+}
 
 const POST_TEMPLATES = [
   { platform: 'reddit', sentiment: 'positive', text: '$TICKER is about to run, diamond hands 💎🙌' },
@@ -90,7 +112,7 @@ function pickSamplePosts(ticker, rand) {
   }));
 }
 
-router.get('/:ticker', (req, res) => {
+router.get('/:ticker', async (req, res) => {
   const ticker = (req.params.ticker || '').trim().toUpperCase();
 
   if (!ticker) {
@@ -100,11 +122,24 @@ router.get('/:ticker', (req, res) => {
   const rand = mulberry32(hashString(ticker));
   const sentiment_history = generateSentimentHistory(rand, 14);
   const mention_volume_history = generateMentionVolumeHistory(rand, 14);
-  const score = sentiment_history[sentiment_history.length - 1];
+  const simulatedBaseline = sentiment_history[sentiment_history.length - 1];
   const mentions = mention_volume_history.reduce((sum, n) => sum + n, 0);
-  const breakdown = computeBreakdown(score, rand);
-  const platform_breakdown = generatePlatformBreakdown(score, rand);
+  const breakdown = computeBreakdown(simulatedBaseline, rand);
+  const platform_breakdown = generatePlatformBreakdown(simulatedBaseline, rand);
   const sample_posts = pickSamplePosts(ticker, rand);
+
+  let score = simulatedBaseline;
+  let scoreSource = 'fallback_mock';
+  let error;
+
+  try {
+    const real = await runRealSentiment(ticker);
+    score = Number(real.score.toFixed(2));
+    platform_breakdown.reddit = Number(real.reddit.score.toFixed(2));
+    scoreSource = 'real';
+  } catch (err) {
+    error = err.message;
+  }
 
   const response = {
     ticker,
@@ -117,10 +152,19 @@ router.get('/:ticker', (req, res) => {
     mention_volume_history,
     confidence: mentions,
     platform_breakdown,
+    source: {
+      score: scoreSource,
+      platform_breakdown: { reddit: scoreSource === 'real' ? 'real' : 'fallback_mock', twitter: 'simulated', stocktwits: 'simulated' },
+      breakdown: 'simulated',
+      sentiment_history: 'simulated',
+      mention_volume_history: 'simulated',
+      confidence: 'simulated',
+      sample_posts: 'simulated',
+    },
   };
 
-  if (!KNOWN_TICKERS.includes(ticker)) {
-    response.note = 'No live data found for this ticker — showing simulated sentiment for demo purposes.';
+  if (error) {
+    response.note = `Live sentiment lookup failed (${error}) — showing simulated fallback for the score.`;
   }
 
   res.json(response);

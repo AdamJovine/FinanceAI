@@ -39,4 +39,23 @@ function VolumeSparkline({ data }) {
   )
 }
 
-export { SentimentSparkline, VolumeSparkline }
+function PriceLineChart({ data }) {
+  const width = 280
+  const height = 64
+  const values = data.map((d) => d.close)
+  const min = Math.min(...values)
+  const max = Math.max(...values)
+  const range = max - min || 1
+  const step = width / (values.length - 1)
+  const y = (v) => height - ((v - min) / range) * (height - 6) - 3
+  const points = values.map((v, i) => `${i * step},${y(v)}`).join(' ')
+
+  return (
+    <svg className="sparkline" viewBox={`0 0 ${width} ${height}`} preserveAspectRatio="none">
+      <polyline points={points} className="sparkline-line" fill="none" />
+      <circle cx={width} cy={y(values[values.length - 1])} r="3" className="sparkline-dot" />
+    </svg>
+  )
+}
+
+export { SentimentSparkline, VolumeSparkline, PriceLineChart }
