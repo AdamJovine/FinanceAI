@@ -4,33 +4,34 @@ const W = 640
 const H = 320
 const PAD = { left: 44, right: 20, top: 12, bottom: 28 }
 
-function BacktestChart({ data }) {
+// series: [{ key, name, color, values, returnPct }, ...] -- all `values` arrays
+// must be the same length as `dates` and indexed to the same basis (e.g. 100 at start).
+function BacktestChart({ dates, series }) {
   const svgRef = useRef(null)
   const [hoverIdx, setHoverIdx] = useState(null)
 
-  const { dates, strategy_indexed: strategyValues, benchmark_indexed: benchmarkValues } = data
   const n = dates.length
 
   const { yMin, yMax } = useMemo(() => {
-    const all = [...strategyValues, ...benchmarkValues]
+    const all = series.flatMap((s) => s.values)
     const min = Math.min(...all)
     const max = Math.max(...all)
     const pad = (max - min) * 0.08 || 1
     return { yMin: min - pad, yMax: max + pad }
-  }, [strategyValues, benchmarkValues])
+  }, [series])
 
   const plotW = W - PAD.left - PAD.right
   const plotH = H - PAD.top - PAD.bottom
   const xAt = (i) => PAD.left + (i / (n - 1)) * plotW
   const yAt = (v) => PAD.top + (1 - (v - yMin) / (yMax - yMin)) * plotH
 
-  const strategyPath = useMemo(
-    () => strategyValues.map((v, i) => `${i === 0 ? 'M' : 'L'}${xAt(i).toFixed(2)},${yAt(v).toFixed(2)}`).join(' '),
-    [strategyValues, yMin, yMax]
-  )
-  const benchmarkPath = useMemo(
-    () => benchmarkValues.map((v, i) => `${i === 0 ? 'M' : 'L'}${xAt(i).toFixed(2)},${yAt(v).toFixed(2)}`).join(' '),
-    [benchmarkValues, yMin, yMax]
+  const paths = useMemo(
+    () =>
+      series.map((s) => ({
+        ...s,
+        d: s.values.map((v, i) => `${i === 0 ? 'M' : 'L'}${xAt(i).toFixed(2)},${yAt(v).toFixed(2)}`).join(' '),
+      })),
+    [series, yMin, yMax]
   )
 
   const gridSteps = 4
@@ -46,24 +47,17 @@ function BacktestChart({ data }) {
     setHoverIdx(idx)
   }
 
-  const hover = hoverIdx === null ? null : {
-    x: xAt(hoverIdx),
-    date: dates[hoverIdx],
-    strategy: strategyValues[hoverIdx],
-    benchmark: benchmarkValues[hoverIdx],
-  }
+  const hoverX = hoverIdx === null ? null : xAt(hoverIdx)
 
   return (
     <div className="chart">
       <div className="chart-legend">
-        <span className="chart-legend-item">
-          <span className="chart-legend-key" style={{ background: 'var(--chart-strategy)' }} />
-          Strategy <strong>{data.strategy_return_pct >= 0 ? '+' : ''}{data.strategy_return_pct.toFixed(2)}%</strong>
-        </span>
-        <span className="chart-legend-item">
-          <span className="chart-legend-key" style={{ background: 'var(--chart-benchmark)' }} />
-          {data.benchmark_ticker} <strong>{data.benchmark_return_pct >= 0 ? '+' : ''}{data.benchmark_return_pct.toFixed(2)}%</strong>
-        </span>
+        {series.map((s) => (
+          <span className="chart-legend-item" key={s.key}>
+            <span className="chart-legend-key" style={{ background: s.color }} />
+            {s.name} <strong>{s.returnPct >= 0 ? '+' : ''}{s.returnPct.toFixed(2)}%</strong>
+          </span>
+        ))}
       </div>
 
       <svg
@@ -94,32 +88,29 @@ function BacktestChart({ data }) {
           </text>
         ))}
 
-        <path d={benchmarkPath} className="chart-line" stroke="var(--chart-benchmark)" />
-        <path d={strategyPath} className="chart-line" stroke="var(--chart-strategy)" />
+        {paths.map((s) => (
+          <path key={s.key} d={s.d} className="chart-line" stroke={s.color} />
+        ))}
 
-        {hover && (
+        {hoverX !== null && (
           <>
-            <line x1={hover.x} x2={hover.x} y1={PAD.top} y2={H - PAD.bottom} className="chart-crosshair" />
-            <circle cx={hover.x} cy={yAt(hover.strategy)} r={4} className="chart-dot" fill="var(--chart-strategy)" />
-            <circle cx={hover.x} cy={yAt(hover.benchmark)} r={4} className="chart-dot" fill="var(--chart-benchmark)" />
+            <line x1={hoverX} x2={hoverX} y1={PAD.top} y2={H - PAD.bottom} className="chart-crosshair" />
+            {series.map((s) => (
+              <circle key={s.key} cx={hoverX} cy={yAt(s.values[hoverIdx])} r={4} className="chart-dot" fill={s.color} />
+            ))}
           </>
         )}
       </svg>
 
-      {hover && (
-        <div
-          className="chart-tooltip"
-          style={{ left: `${(hover.x / W) * 100}%` }}
-        >
-          <div className="chart-tooltip-date">{hover.date}</div>
-          <div className="chart-tooltip-row">
-            <span><span className="chart-legend-key" style={{ background: 'var(--chart-strategy)' }} />Strategy</span>
-            <strong>{hover.strategy.toFixed(2)}</strong>
-          </div>
-          <div className="chart-tooltip-row">
-            <span><span className="chart-legend-key" style={{ background: 'var(--chart-benchmark)' }} />{data.benchmark_ticker}</span>
-            <strong>{hover.benchmark.toFixed(2)}</strong>
-          </div>
+      {hoverIdx !== null && (
+        <div className="chart-tooltip" style={{ left: `${(hoverX / W) * 100}%` }}>
+          <div className="chart-tooltip-date">{dates[hoverIdx]}</div>
+          {series.map((s) => (
+            <div className="chart-tooltip-row" key={s.key}>
+              <span><span className="chart-legend-key" style={{ background: s.color }} />{s.name}</span>
+              <strong>{s.values[hoverIdx].toFixed(2)}</strong>
+            </div>
+          ))}
         </div>
       )}
     </div>
