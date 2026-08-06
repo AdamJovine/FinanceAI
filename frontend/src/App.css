@@ -331,6 +331,10 @@ h1 {
   color: var(--negative);
 }
 
+.source-tag-unavailable {
+  color: var(--text-muted);
+}
+
 .price-chart-block {
   margin-bottom: 32px;
 }
@@ -406,6 +410,12 @@ h1 {
 .post-text {
   flex: 1;
   font-size: 14px;
+  color: inherit;
+  text-decoration: none;
+}
+
+a.post-text:hover {
+  text-decoration: underline;
 }
 
 .post-sentiment {

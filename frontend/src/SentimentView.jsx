@@ -9,7 +9,7 @@ function sentimentLabel(score) {
   return 'neutral'
 }
 
-const SOURCE_LABELS = { real: 'real', simulated: 'simulated', fallback_mock: 'fallback mock' }
+const SOURCE_LABELS = { real: 'real', simulated: 'simulated', fallback_mock: 'fallback mock', unavailable: 'unavailable' }
 
 function SourceTag({ source }) {
   return <span className={`source-tag source-tag-${source}`}>{SOURCE_LABELS[source] || source}</span>
@@ -70,7 +70,7 @@ function SentimentView() {
   return (
     <main className="page">
       <h1>Meme Stock Sentiment</h1>
-      <p className="subtitle">Type a ticker to see simulated social sentiment.</p>
+      <p className="subtitle">Type a ticker to see real Reddit + news sentiment. Trend charts and per-platform breakdown beyond Reddit are still simulated.</p>
 
       <form className="search" onSubmit={handleSubmit}>
         <input
@@ -187,11 +187,20 @@ function SentimentView() {
             <h3>
               Sample posts <SourceTag source={result.source.sample_posts} />
             </h3>
+            {result.sample_posts.length === 0 && (
+              <p className="stat-caption">No real posts found for this ticker right now.</p>
+            )}
             <ul>
               {result.sample_posts.map((post, i) => (
                 <li key={i} className="post">
                   <span className="post-platform">{post.platform}</span>
-                  <span className="post-text">{post.text}</span>
+                  {post.url ? (
+                    <a className="post-text" href={post.url} target="_blank" rel="noreferrer">
+                      {post.text}
+                    </a>
+                  ) : (
+                    <span className="post-text">{post.text}</span>
+                  )}
                   <span className={`post-sentiment post-sentiment-${post.sentiment}`}>
                     {post.sentiment}
                   </span>
