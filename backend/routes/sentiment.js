@@ -25,14 +25,27 @@ function runRealSentiment(ticker) {
   });
 }
 
-const POST_TEMPLATES = [
-  { platform: 'reddit', sentiment: 'positive', text: '$TICKER is about to run, diamond hands 💎🙌' },
-  { platform: 'reddit', sentiment: 'negative', text: 'Not sure why anyone is still holding $TICKER, feels overhyped.' },
-  { platform: 'reddit', sentiment: 'neutral', text: 'Watching $TICKER closely this week, no position yet.' },
-  { platform: 'twitter', sentiment: 'positive', text: '$TICKER breaking out on huge volume, this could be the move 🚀' },
-  { platform: 'twitter', sentiment: 'negative', text: '$TICKER dumping hard, glad I got out yesterday.' },
-  { platform: 'twitter', sentiment: 'neutral', text: '$TICKER trading sideways, waiting for a catalyst.' },
-];
+function buildSamplePosts(real) {
+  const posts = [];
+  for (const article of real?.news?.articles || []) {
+    if (!article.excerpt) continue;
+    posts.push({
+      platform: 'news',
+      sentiment: article.label || 'neutral',
+      text: article.excerpt,
+      url: article.url,
+    });
+  }
+  for (const post of real?.reddit?.posts || []) {
+    posts.push({
+      platform: 'reddit',
+      sentiment: post.sentiment || 'neutral',
+      text: post.text,
+      url: post.url,
+    });
+  }
+  return posts;
+}
 
 function hashString(str) {
   let hash = 5381;
@@ -82,13 +95,6 @@ function generateMentionVolumeHistory(rand, days) {
   return history;
 }
 
-function generatePlatformBreakdown(score, rand) {
-  const platforms = ['reddit', 'twitter', 'stocktwits'];
-  return Object.fromEntries(
-    platforms.map((platform) => [platform, Number(clamp(score + (rand() - 0.5) * 0.6, -1, 1).toFixed(2))])
-  );
-}
-
 function computeBreakdown(score, rand) {
   const posWeight = Math.max(0.05, 0.5 + score * 0.4 + (rand() - 0.5) * 0.1);
   const negWeight = Math.max(0.05, 0.5 - score * 0.4 + (rand() - 0.5) * 0.1);
@@ -98,18 +104,6 @@ function computeBreakdown(score, rand) {
   const negative = Math.round((negWeight / total) * 100);
   const neutral = 100 - positive - negative;
   return { positive, neutral, negative };
-}
-
-function pickSamplePosts(ticker, rand) {
-  const shuffled = [...POST_TEMPLATES];
-  for (let i = shuffled.length - 1; i > 0; i--) {
-    const j = Math.floor(rand() * (i + 1));
-    [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
-  }
-  return shuffled.slice(0, 4).map((post) => ({
-    ...post,
-    text: post.text.replace('$TICKER', ticker),
-  }));
 }
 
 router.get('/:ticker', async (req, res) => {
@@ -125,17 +119,22 @@ router.get('/:ticker', async (req, res) => {
   const simulatedBaseline = sentiment_history[sentiment_history.length - 1];
   const mentions = mention_volume_history.reduce((sum, n) => sum + n, 0);
   const breakdown = computeBreakdown(simulatedBaseline, rand);
-  const platform_breakdown = generatePlatformBreakdown(simulatedBaseline, rand);
-  const sample_posts = pickSamplePosts(ticker, rand);
 
   let score = simulatedBaseline;
   let scoreSource = 'fallback_mock';
+  let platform_breakdown = {};
+  let platform_breakdown_source = {};
+  let sample_posts = [];
+  let sample_posts_source = 'unavailable';
   let error;
 
   try {
     const real = await runRealSentiment(ticker);
     score = Number(real.score.toFixed(2));
-    platform_breakdown.reddit = Number(real.reddit.score.toFixed(2));
+    platform_breakdown = { reddit: Number(real.reddit.score.toFixed(2)) };
+    platform_breakdown_source = { reddit: 'real' };
+    sample_posts = buildSamplePosts(real);
+    sample_posts_source = 'real';
     scoreSource = 'real';
   } catch (err) {
     error = err.message;
@@ -154,17 +153,17 @@ router.get('/:ticker', async (req, res) => {
     platform_breakdown,
     source: {
       score: scoreSource,
-      platform_breakdown: { reddit: scoreSource === 'real' ? 'real' : 'fallback_mock', twitter: 'simulated', stocktwits: 'simulated' },
+      platform_breakdown: platform_breakdown_source,
       breakdown: 'simulated',
       sentiment_history: 'simulated',
       mention_volume_history: 'simulated',
       confidence: 'simulated',
-      sample_posts: 'simulated',
+      sample_posts: sample_posts_source,
     },
   };
 
   if (error) {
-    response.note = `Live sentiment lookup failed (${error}) — showing simulated fallback for the score.`;
+    response.note = `Live sentiment lookup failed (${error}) — score falling back to simulated; no real posts available this time.`;
   }
 
   res.json(response);

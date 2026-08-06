@@ -95,44 +95,56 @@ def llama_signal(ticker, date, data, context_fn, base_url="http://localhost:8080
 _online_sentiment_cache = {}
 
 
-def online_signal(ticker, date, data, openai_api_key, perigon_api_key, openai_model="gpt-5-mini",
-                   news_weight=0.4, reddit_weight=0.6):
-    """Live Reddit + news sentiment via OpenAI web search and Perigon.
+def online_signal(ticker, date, data, openai_api_key, perigon_api_key, as_of_date=None,
+                   openai_model="gpt-5-mini", news_weight=0.4, reddit_weight=0.6):
+    """Reddit + news sentiment via OpenAI web search and Perigon.
 
-    Unlike a historical Reddit dataset, this reflects sentiment *right now* --
-    it can't be replayed bar-by-bar over the past, so the live score is fetched
-    once per ticker and cached for every date a backtest asks about it. That
-    makes this signal most meaningful for a live/paper-trading style decision
-    on the current day, not a multi-year historical sweep. Bind the API keys
-    with functools.partial before passing this to the strategy as its signal_fn.
+    By default this is *live* sentiment (as of right now) -- it can't be
+    replayed bar-by-bar over the past, so the score is fetched once per
+    ticker and cached for every date a backtest asks about it. That makes the
+    default most meaningful for a live/paper-trading style decision on the
+    current day, not a multi-year historical sweep.
+
+    Pass `as_of_date` to instead fetch sentiment as of that specific date
+    (point-in-time for the news leg, best-effort for the Reddit leg -- see
+    fetch_reddit_sentiment) -- still fetched once and cached, not re-fetched
+    per bar. Bind the API keys (and as_of_date, if used) with functools.partial
+    before passing this to the strategy as its signal_fn.
     """
-    if ticker not in _online_sentiment_cache:
-        _online_sentiment_cache[ticker] = fetch_combined_sentiment(
+    key = (ticker, as_of_date)
+    if key not in _online_sentiment_cache:
+        _online_sentiment_cache[key] = fetch_combined_sentiment(
             ticker,
             openai_api_key,
             perigon_api_key,
+            as_of_date=as_of_date,
             openai_model=openai_model,
             news_weight=news_weight,
             reddit_weight=reddit_weight,
         )
-    return _online_sentiment_cache[ticker]["score"]
+    return _online_sentiment_cache[key]["score"]
 
 
 _rf_model_cache = {}
 
 
-def rf_signal(ticker, date, data, openai_api_key, perigon_api_key, openai_model="gpt-5-mini"):
+def rf_signal(ticker, date, data, openai_api_key, perigon_api_key, as_of_date=None, openai_model="gpt-5-mini"):
     """Random-forest signal trained on Yahoo Finance technical/fundamental data
     plus the sentiment model's score as one input feature (see random_forest_model.py).
 
-    Like online_signal, this trains once per ticker and caches the resulting
-    signal for every date a backtest asks about -- the sentiment and
-    fundamentals features are live/current snapshots, not point-in-time
-    historical ones. Bind the API keys with functools.partial before passing
-    this to the strategy as its signal_fn.
+    Like online_signal, this trains once per ticker (and as_of_date) and
+    caches the resulting signal for every date a backtest asks about --
+    fundamentals stay a live/current snapshot regardless (see
+    train_and_predict), but sentiment is point-in-time-as-of `as_of_date`
+    when given, live/today otherwise. Bind the API keys (and as_of_date, if
+    used) with functools.partial before passing this to the strategy as its
+    signal_fn.
     """
-    if ticker not in _rf_model_cache:
-        _rf_model_cache[ticker] = train_and_predict(
-            ticker, openai_api_key, perigon_api_key, openai_model=openai_model,
+    key = (ticker, as_of_date)
+    if key not in _rf_model_cache:
+        _rf_model_cache[key] = train_and_predict(
+            ticker, openai_api_key, perigon_api_key,
+            end_date=as_of_date.isoformat() if as_of_date else None,
+            openai_model=openai_model,
         )
-    return _rf_model_cache[ticker]["score"]
+    return _rf_model_cache[key]["score"]

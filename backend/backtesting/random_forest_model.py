@@ -62,23 +62,28 @@ def build_features(ticker, start_date, end_date, sentiment_score, fundamentals):
 
 
 def train_and_predict(ticker, openai_api_key, perigon_api_key, start_date=None, end_date=None,
-                       openai_model="gpt-5-mini", n_estimators=300, random_state=0):
+                       as_of_sentiment=True, openai_model="gpt-5-mini", n_estimators=300, random_state=0):
     """Train a RandomForestClassifier on Yahoo Finance technical + fundamental
-    features plus the live sentiment score to predict next-day direction, and
-    return today's prediction as a signal in [-1.0, 1.0].
+    features plus the sentiment score to predict next-day direction, and
+    return the prediction for `end_date` as a signal in [-1.0, 1.0].
 
-    Like online_signal, the sentiment score and fundamentals snapshot are
-    live/current values, not point-in-time historical ones -- they're
-    broadcast as constants across the whole training history rather than
-    varying per historical day. Only the technical indicators are genuinely
-    point-in-time historical, so this is a technical model with sentiment and
-    fundamentals folded in as extra context for today's prediction, not a
-    model that could have made this same prediction on a past date.
+    When `as_of_sentiment` is True (default), the sentiment score is fetched
+    as of `end_date` rather than live/today -- point-in-time for the news leg
+    (Perigon), best-effort for the Reddit leg (see fetch_reddit_sentiment).
+    Fundamentals remain a live/current snapshot regardless -- yfinance has no
+    historical point-in-time fundamentals endpoint, so that piece can't be
+    made point-in-time with this data source. They're broadcast as constants
+    across the whole training history either way, which is also why a tree
+    ensemble assigns them ~zero feature importance: a column with no variance
+    has nothing to split on.
     """
     end_date = end_date or date.today().isoformat()
     start_date = start_date or (date.today() - timedelta(days=730)).isoformat()
+    sentiment_as_of = date.fromisoformat(end_date) if as_of_sentiment else None
 
-    sentiment = fetch_combined_sentiment(ticker, openai_api_key, perigon_api_key, openai_model=openai_model)
+    sentiment = fetch_combined_sentiment(
+        ticker, openai_api_key, perigon_api_key, as_of_date=sentiment_as_of, openai_model=openai_model,
+    )
     fundamentals = fetch_fundamental_snapshot(ticker)
 
     features, next_day_return = build_features(ticker, start_date, end_date, sentiment["score"], fundamentals)
