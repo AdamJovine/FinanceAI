@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { Search, DollarSign, Percent, Gauge, TrendingDown } from 'lucide-react'
 import BacktestChart from './BacktestChart'
 
 const API_BASE = 'http://localhost:5001'
@@ -167,13 +168,20 @@ function BacktestView() {
       <p className="subtitle">Run a historical backtest against a signal strategy, or compare all of them.</p>
 
       <form className="search backtest-form" onSubmit={handleSubmit}>
-        <input
-          type="text"
-          value={ticker}
-          onChange={(e) => setTicker(e.target.value)}
-          placeholder="Ticker, e.g. AAPL"
-          aria-label="Stock ticker"
-        />
+        <div className="input-wrap">
+          <label className="field-label" htmlFor="backtest-ticker">Ticker symbol</label>
+          <div className="input-icon-wrap">
+            <Search size={16} className="input-icon" />
+            <input
+              id="backtest-ticker"
+              type="text"
+              value={ticker}
+              onChange={(e) => setTicker(e.target.value)}
+              placeholder="Ticker, e.g. AAPL"
+              aria-label="Stock ticker"
+            />
+          </div>
+        </div>
         <input
           type="date"
           value={start}
@@ -231,23 +239,38 @@ function BacktestView() {
               <div className="stats">
                 <div className="stat">
                   <span className="stat-value">${result.start_value?.toLocaleString()}</span>
-                  <span className="stat-label">Start value</span>
+                  <span className="stat-label">
+                    <span className="stat-icon-chip"><DollarSign size={12} /></span>
+                    Start value
+                  </span>
                 </div>
                 <div className="stat">
                   <span className="stat-value">${result.end_value?.toLocaleString()}</span>
-                  <span className="stat-label">End value</span>
+                  <span className="stat-label">
+                    <span className="stat-icon-chip"><DollarSign size={12} /></span>
+                    End value
+                  </span>
                 </div>
                 <div className="stat">
-                  <span className="stat-value">{result.return_pct}%</span>
-                  <span className="stat-label">Return</span>
+                  <span className={`stat-value ${result.return_pct >= 0 ? 'gain-positive' : 'gain-negative'}`}>{result.return_pct}%</span>
+                  <span className="stat-label">
+                    <span className="stat-icon-chip"><Percent size={12} /></span>
+                    Return
+                  </span>
                 </div>
                 <div className="stat">
                   <span className="stat-value">{result.sharpe_ratio ?? 'N/A'}</span>
-                  <span className="stat-label">Sharpe ratio</span>
+                  <span className="stat-label">
+                    <span className="stat-icon-chip"><Gauge size={12} /></span>
+                    Sharpe ratio
+                  </span>
                 </div>
                 <div className="stat">
                   <span className="stat-value">{result.max_drawdown_pct}%</span>
-                  <span className="stat-label">Max drawdown</span>
+                  <span className="stat-label">
+                    <span className="stat-icon-chip"><TrendingDown size={12} /></span>
+                    Max drawdown
+                  </span>
                 </div>
               </div>
             </>

@@ -1,53 +1,56 @@
-.demo-banner {
-  text-align: center;
-  font-size: 13px;
-  font-weight: 600;
-  padding: 10px 16px;
-  background: var(--surface);
-  color: var(--text-muted);
-  border-bottom: 1px solid var(--border);
-}
-
 .nav {
   display: flex;
   justify-content: center;
-  gap: 8px;
-  padding: 20px 0;
+  gap: 6px;
+  padding: 22px 0;
   border-bottom: 1px solid var(--border);
 }
 
 .nav-tab {
-  padding: 8px 18px;
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  padding: 10px 20px;
+  font-family: var(--font-body);
   font-size: 14px;
   font-weight: 600;
   border: none;
-  border-radius: 6px;
+  border-radius: 100px;
   background: none;
   color: var(--text-muted);
   cursor: pointer;
+  transition: background-color 0.15s, color 0.15s;
+}
+
+.nav-tab:hover {
+  color: var(--text);
 }
 
 .nav-tab.active {
-  color: var(--text);
-  background: var(--surface);
+  color: var(--on-accent);
+  background: var(--accent);
 }
 
 .page {
   max-width: 640px;
   margin: 0 auto;
-  padding: 64px 24px 80px;
+  padding: 56px 24px 80px;
   text-align: center;
 }
 
 h1 {
-  font-size: 32px;
+  font-family: var(--font-display);
+  font-size: 40px;
+  line-height: 1.15;
   font-weight: 600;
-  margin: 0 0 8px;
+  letter-spacing: -0.01em;
+  margin: 0 0 10px;
 }
 
 .subtitle {
   color: var(--text-muted);
-  margin: 0 0 40px;
+  font-size: 16px;
+  margin: 0 0 28px;
 }
 
 .page-simulated-note {
@@ -57,8 +60,7 @@ h1 {
   text-transform: uppercase;
   letter-spacing: 0.04em;
   color: var(--text-muted);
-  background: var(--surface);
-  border: 1px solid var(--border);
+  background: var(--neutral-tint);
   border-radius: 100px;
   padding: 6px 14px;
   margin: 0 0 32px;
@@ -69,13 +71,20 @@ h1 {
   border-collapse: collapse;
   margin: 24px 0 32px;
   font-size: 14px;
+  background: var(--surface-2);
+  border-radius: 12px;
+  overflow: hidden;
 }
 
 .holdings-table th,
 .holdings-table td {
   text-align: left;
-  padding: 8px 10px;
+  padding: 10px 14px;
   border-bottom: 1px solid var(--border);
+}
+
+.holdings-table tr:last-child td {
+  border-bottom: none;
 }
 
 .holdings-table th {
@@ -93,20 +102,53 @@ h1 {
   color: var(--negative);
 }
 
+.field-label {
+  display: block;
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--text-muted);
+  margin: 0 0 10px;
+}
+
 .search {
   display: flex;
   gap: 12px;
   justify-content: center;
+  align-items: flex-end;
+}
+
+.input-wrap {
+  flex: 1;
+  max-width: 260px;
+}
+
+.input-icon-wrap {
+  position: relative;
+}
+
+.input-icon-wrap .input-icon {
+  position: absolute;
+  left: 14px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--text-muted);
+  pointer-events: none;
+}
+
+.input-icon-wrap input {
+  width: 100%;
+  padding: 13px 16px 13px 40px;
 }
 
 .search input {
-  flex: 1;
-  max-width: 260px;
-  padding: 12px 16px;
+  padding: 13px 16px;
   font-size: 16px;
+  font-family: var(--font-body);
   border: 1px solid var(--border);
-  border-radius: 6px;
-  background: var(--bg);
+  border-radius: 8px;
+  background: var(--surface-2);
   color: var(--text);
 }
 
@@ -117,22 +159,24 @@ h1 {
 }
 
 .search select {
-  padding: 12px 14px;
+  padding: 13px 14px;
   font-size: 15px;
+  font-family: var(--font-body);
   border: 1px solid var(--border);
-  border-radius: 6px;
-  background: var(--bg);
+  border-radius: 8px;
+  background: var(--surface-2);
   color: var(--text);
 }
 
 .search button {
-  padding: 12px 20px;
+  padding: 13px 24px;
   font-size: 16px;
-  font-weight: 600;
+  font-weight: 700;
+  font-family: var(--font-body);
   border: none;
-  border-radius: 6px;
+  border-radius: 8px;
   background: var(--accent);
-  color: #fff;
+  color: var(--on-accent);
   cursor: pointer;
 }
 
@@ -150,6 +194,15 @@ h1 {
 .backtest-form input {
   flex: 1 1 120px;
   max-width: 140px;
+}
+
+.backtest-form .input-wrap {
+  flex: 1 1 170px;
+  max-width: 190px;
+}
+
+.backtest-form .input-wrap input {
+  max-width: none;
 }
 
 .backtest-form select {
@@ -172,10 +225,10 @@ h1 {
 .results {
   margin-top: 48px;
   text-align: left;
-  border: 1px solid var(--border);
-  border-radius: 10px;
+  border-radius: 14px;
   padding: 28px;
   background: var(--surface);
+  box-shadow: 0 1px 0 rgba(255, 255, 255, 0.03) inset, 0 20px 40px rgba(0, 0, 0, 0.35);
 }
 
 .results-header {
@@ -193,22 +246,24 @@ h1 {
 .badge {
   text-transform: capitalize;
   font-size: 13px;
-  font-weight: 600;
+  font-weight: 700;
   padding: 4px 10px;
   border-radius: 100px;
-  color: #fff;
 }
 
 .badge-bullish {
-  background: var(--positive);
+  background: var(--positive-tint);
+  color: var(--positive);
 }
 
 .badge-bearish {
-  background: var(--negative);
+  background: var(--negative-tint);
+  color: var(--negative);
 }
 
 .badge-neutral {
-  background: var(--neutral);
+  background: var(--neutral-tint);
+  color: var(--neutral);
 }
 
 .note {
@@ -219,23 +274,51 @@ h1 {
 
 .stats {
   display: flex;
-  gap: 32px;
+  gap: 14px;
   margin: 24px 0;
+  flex-wrap: wrap;
 }
 
 .stat {
   display: flex;
   flex-direction: column;
+  gap: 4px;
+  flex: 1 1 140px;
+  background: var(--surface-2);
+  border-radius: 12px;
+  padding: 14px 16px;
+  box-shadow: 0 1px 0 rgba(255, 255, 255, 0.03) inset;
 }
 
 .stat-value {
-  font-size: 28px;
-  font-weight: 600;
+  font-size: 26px;
+  font-weight: 700;
+  color: var(--text);
 }
 
 .stat-label {
+  order: -1;
+  display: flex;
+  align-items: center;
+  gap: 6px;
   color: var(--text-muted);
-  font-size: 13px;
+  font-size: 12px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  margin-bottom: 2px;
+}
+
+.stat-icon-chip {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 20px;
+  height: 20px;
+  border-radius: 6px;
+  background: var(--accent-tint);
+  color: var(--accent);
+  flex-shrink: 0;
 }
 
 .stat-caption {
@@ -305,9 +388,16 @@ h1 {
 
 .chart-block h3,
 .platform-breakdown h3,
-.posts h3 {
-  font-size: 14px;
+.posts h3,
+.breakdown h3 {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-family: var(--font-body);
+  font-size: 13px;
   font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
   color: var(--text-muted);
   margin: 0 0 10px;
 }
@@ -390,9 +480,8 @@ h1 {
   align-items: baseline;
   gap: 10px;
   padding: 12px 14px;
-  border: 1px solid var(--border);
-  border-radius: 8px;
-  background: var(--bg);
+  border-radius: 10px;
+  background: var(--surface-2);
 }
 
 .post-platform {
@@ -496,12 +585,11 @@ h1 {
   position: absolute;
   top: 0;
   transform: translateX(12px);
-  background: var(--bg);
-  border: 1px solid var(--border);
-  border-radius: 8px;
+  background: var(--surface-2);
+  border-radius: 10px;
   padding: 8px 10px;
   font-size: 12px;
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.12);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.5);
   pointer-events: none;
   min-width: 150px;
 }

@@ -1,19 +1,27 @@
 :root {
-  --text: #3a3a3a;
-  --text-muted: #767676;
-  --bg: #ffffff;
-  --border: #e2e2e2;
-  --surface: #f7f7f5;
-  --accent: #c2540a;
-  --positive: #2f7d4f;
-  --neutral: #8a8a8a;
-  --negative: #b23a2f;
+  --text: #eef1ef;
+  --text-muted: #93a099;
+  --bg: #141715;
+  --surface: #1c2320;
+  --surface-2: #232b27;
+  --border: #2a322e;
+  --accent: #35c987;
+  --on-accent: #0d130f;
+  --positive: #4fd192;
+  --neutral: #8b958f;
+  --negative: #f2685c;
+  --positive-tint: rgba(79, 209, 146, 0.16);
+  --negative-tint: rgba(242, 104, 92, 0.16);
+  --neutral-tint: rgba(139, 149, 143, 0.16);
+  --accent-tint: rgba(53, 201, 135, 0.16);
   --chart-strategy: var(--accent);
-  --chart-benchmark: #2a66c9;
-  --chart-rf: #1a8f5c;
+  --chart-benchmark: #d1a054;
+  --chart-rf: #7fe0ab;
   --chart-neutral: var(--neutral);
+  --font-display: 'Fraunces', Georgia, serif;
+  --font-body: 'Space Grotesk', system-ui, 'Segoe UI', Roboto, sans-serif;
 
-  font: 16px/1.5 system-ui, 'Segoe UI', Roboto, sans-serif;
+  font: 16px/1.5 var(--font-body);
   color: var(--text);
   background: var(--bg);
   -webkit-font-smoothing: antialiased;
@@ -25,4 +33,10 @@
 
 body {
   margin: 0;
+}
+
+h1,
+h2,
+h3 {
+  font-family: var(--font-display);
 }

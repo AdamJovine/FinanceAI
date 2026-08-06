@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react'
+import { Wallet, TrendingUp, TrendingDown } from 'lucide-react'
 import { PriceLineChart } from './Sparkline'
 
 const API_BASE = 'http://localhost:5001'
@@ -17,6 +18,7 @@ function PortfolioView() {
   return (
     <main className="page">
       <h1>My Portfolio</h1>
+      <p className="subtitle">A simulated view of holdings, performance, and history.</p>
       <p className="page-simulated-note">Simulated portfolio — no real trades or funds.</p>
 
       {error && <p className="error">{error}</p>}
@@ -26,13 +28,21 @@ function PortfolioView() {
           <div className="stats">
             <div className="stat">
               <span className="stat-value">${data.total_value.toLocaleString()}</span>
-              <span className="stat-label">Total value</span>
+              <span className="stat-label">
+                <span className="stat-icon-chip"><Wallet size={12} /></span>
+                Total value
+              </span>
             </div>
             <div className="stat">
               <span className={`stat-value ${data.total_gain_loss >= 0 ? 'gain-positive' : 'gain-negative'}`}>
                 {data.total_gain_loss >= 0 ? '+' : ''}${data.total_gain_loss.toLocaleString()} ({data.total_gain_loss_pct}%)
               </span>
-              <span className="stat-label">Total gain/loss</span>
+              <span className="stat-label">
+                <span className="stat-icon-chip">
+                  {data.total_gain_loss >= 0 ? <TrendingUp size={12} /> : <TrendingDown size={12} />}
+                </span>
+                Total gain/loss
+              </span>
             </div>
           </div>
 
