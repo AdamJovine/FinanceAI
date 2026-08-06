@@ -28,7 +28,7 @@ def build_signal_fn(name):
     raise ValueError(f"Unknown signal provider: {name}")
 
 
-def run_backtest(ticker="AAPL", start_date=None, end_date=None, cash=100000.0, commission=0.001, signal_fn=None):
+def run_backtest(ticker="AAPL", start_date=None, end_date=None, cash=100000.0, commission=0.001, signal_fn=None, verbose=True):
     end_date = end_date or date.today().isoformat()
     start_date = start_date or (date.today() - timedelta(days=365)).isoformat()
 
@@ -53,13 +53,14 @@ def run_backtest(ticker="AAPL", start_date=None, end_date=None, cash=100000.0, c
     end_value = cerebro.broker.getvalue()
     strat = results[0]
 
-    print(f"Ticker:        {ticker}")
-    print(f"Period:        {start_date} -> {end_date}")
-    print(f"Start value:   {start_value:.2f}")
-    print(f"End value:     {end_value:.2f}")
-    print(f"Return:        {(end_value / start_value - 1) * 100:.2f}%")
-    print(f"Sharpe ratio:  {strat.analyzers.sharpe.get_analysis().get('sharperatio')}")
-    print(f"Max drawdown:  {strat.analyzers.drawdown.get_analysis().max.drawdown:.2f}%")
+    if verbose:
+        print(f"Ticker:        {ticker}")
+        print(f"Period:        {start_date} -> {end_date}")
+        print(f"Start value:   {start_value:.2f}")
+        print(f"End value:     {end_value:.2f}")
+        print(f"Return:        {(end_value / start_value - 1) * 100:.2f}%")
+        print(f"Sharpe ratio:  {strat.analyzers.sharpe.get_analysis().get('sharperatio')}")
+        print(f"Max drawdown:  {strat.analyzers.drawdown.get_analysis().max.drawdown:.2f}%")
 
     return cerebro, results
 
