@@ -57,8 +57,9 @@ def parse_args():
     parser.add_argument("--cash", type=float, default=100000.0)
     parser.add_argument("--commission", type=float, default=0.001)
     parser.add_argument("--benchmark", default="SPY")
-    parser.add_argument("--signal-provider", choices=["neutral", "online"], default="neutral",
-                         help="'online' trades on live OpenAI web-search + Perigon sentiment.")
+    parser.add_argument("--signal-provider", choices=["neutral", "online", "rf"], default="neutral",
+                         help="'online' trades on live OpenAI web-search + Perigon sentiment; "
+                              "'rf' trades on a random forest over Yahoo Finance data + that sentiment score.")
     return parser.parse_args()
 
 
