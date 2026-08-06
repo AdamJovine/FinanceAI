@@ -12,6 +12,7 @@
   --chart-benchmark: #2a66c9;
   --chart-rf: #1a8f5c;
   --chart-neutral: var(--neutral);
+  --chart-finbert: #b0208a;
 
   font: 16px/1.5 system-ui, 'Segoe UI', Roboto, sans-serif;
   color: var(--text);

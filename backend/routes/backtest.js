@@ -21,7 +21,7 @@ function parseOutput(stdout) {
   };
 }
 
-const SIGNAL_PROVIDERS = ['neutral', 'online', 'rf'];
+const SIGNAL_PROVIDERS = ['neutral', 'online', 'rf', 'finbert'];
 
 // Python failures land here as either a raw message (`raise SystemExit("...")`,
 // e.g. missing API keys) or a full traceback ending in `SomeError: message`

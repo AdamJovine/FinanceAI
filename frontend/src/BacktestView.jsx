@@ -7,6 +7,7 @@ const MODELS = [
   { value: 'neutral', label: 'Neutral (no trades)', color: 'var(--chart-neutral)' },
   { value: 'online', label: 'Sentiment analyzer (live)', color: 'var(--chart-strategy)' },
   { value: 'rf', label: 'Random forest (live)', color: 'var(--chart-rf)' },
+  { value: 'finbert', label: 'FinBERT (news only)', color: 'var(--chart-finbert)' },
 ]
 
 function BacktestView() {
@@ -214,6 +215,7 @@ function BacktestView() {
       <p className="note">
         Sentiment analyzer and Random forest run live OpenAI + Perigon calls and need
         <code> OPENAI_API_KEY</code> / <code>PERIGON_API_KEY</code> set on the server.
+        FinBERT only needs <code>PERIGON_API_KEY</code> -- it scores news locally, no OpenAI call.
       </p>
 
       {error && <p className="error">{error}</p>}

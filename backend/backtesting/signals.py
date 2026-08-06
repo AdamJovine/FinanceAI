@@ -1,8 +1,10 @@
 import json
 import re
+from datetime import date as _date
 
 import requests
 
+from finbert_sentiment import fetch_finbert_sentiment
 from online_sentiment import fetch_combined_sentiment
 from random_forest_model import train_and_predict
 
@@ -148,3 +150,42 @@ def rf_signal(ticker, date, data, openai_api_key, perigon_api_key, as_of_date=No
             openai_model=openai_model,
         )
     return _rf_model_cache[key]["score"]
+
+
+_finbert_cache = {}
+
+
+def finbert_signal(ticker, date, data, perigon_api_key, start_date, end_date):
+    """FinBERT-scored Perigon news signal -- no OpenAI, no Reddit.
+
+    Queries Perigon exactly twice per backtest -- once at the start of the
+    given timeframe, once at its halfway point -- instead of refreshing
+    periodically. That fixes Perigon usage at 2 calls no matter how long the
+    backtest window is, rather than scaling with it (a real constraint: the
+    Perigon plan in use here has a small total-request cap, not just a rate
+    limit). `start_date`/`end_date` must be the *resolved* backtest window
+    (matching what run_backtest actually used, not raw possibly-None CLI
+    args) so the halfway point lines up with the real data range. Yahoo
+    Finance headlines are deliberately excluded (see
+    finbert_sentiment.fetch_finbert_sentiment) since they can't be
+    date-filtered and would leak today's news into a historical score. Bind
+    perigon_api_key/start_date/end_date with functools.partial before
+    passing this to the strategy as its signal_fn.
+    """
+    cached = _finbert_cache.get(ticker)
+
+    if cached is None:
+        result = fetch_finbert_sentiment(ticker, perigon_api_key, as_of_date=date, include_yahoo=False)
+        _finbert_cache[ticker] = {"score": result["score"], "refreshed": False}
+        return result["score"]
+
+    if not cached["refreshed"]:
+        start = start_date if isinstance(start_date, _date) else _date.fromisoformat(start_date)
+        end = end_date if isinstance(end_date, _date) else _date.fromisoformat(end_date)
+        midpoint = start + (end - start) / 2
+        if date >= midpoint:
+            result = fetch_finbert_sentiment(ticker, perigon_api_key, as_of_date=date, include_yahoo=False)
+            cached = {"score": result["score"], "refreshed": True}
+            _finbert_cache[ticker] = cached
+
+    return cached["score"]

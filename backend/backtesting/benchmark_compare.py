@@ -57,15 +57,16 @@ def parse_args():
     parser.add_argument("--cash", type=float, default=100000.0)
     parser.add_argument("--commission", type=float, default=0.001)
     parser.add_argument("--benchmark", default="SPY")
-    parser.add_argument("--signal-provider", choices=["neutral", "online", "rf"], default="neutral",
+    parser.add_argument("--signal-provider", choices=["neutral", "online", "rf", "finbert"], default="neutral",
                          help="'online' trades on live OpenAI web-search + Perigon sentiment; "
-                              "'rf' trades on a random forest over Yahoo Finance data + that sentiment score.")
+                              "'rf' trades on a random forest over Yahoo Finance data + that sentiment score; "
+                              "'finbert' trades on local FinBERT-scored Perigon news only (no OpenAI, no Reddit).")
     return parser.parse_args()
 
 
 if __name__ == "__main__":
     args = parse_args()
-    signal_fn = build_signal_fn(args.signal_provider)
+    signal_fn = build_signal_fn(args.signal_provider, start_date=args.start, end_date=args.end)
     result = compare_to_benchmark(
         args.ticker, args.start, args.end, args.cash, args.commission, signal_fn, args.benchmark
     )
