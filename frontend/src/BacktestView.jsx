@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import BacktestChart from './BacktestChart'
 
 const API_BASE = 'http://localhost:5001'
 
@@ -9,6 +10,7 @@ function BacktestView() {
   const [cash, setCash] = useState('')
   const [commission, setCommission] = useState('')
   const [result, setResult] = useState(null)
+  const [chartData, setChartData] = useState(null)
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
 
@@ -18,31 +20,46 @@ function BacktestView() {
     if (!trimmed) {
       setError('Enter a ticker symbol first.')
       setResult(null)
+      setChartData(null)
       return
     }
 
     setLoading(true)
     setError('')
     try {
-      const res = await fetch(`${API_BASE}/api/backtest`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          ticker: trimmed,
-          start: start || undefined,
-          end: end || undefined,
-          cash: cash || undefined,
-          commission: commission || undefined,
+      const body = {
+        ticker: trimmed,
+        start: start || undefined,
+        end: end || undefined,
+        cash: cash || undefined,
+        commission: commission || undefined,
+      }
+
+      const [statsRes, chartRes] = await Promise.all([
+        fetch(`${API_BASE}/api/backtest`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(body),
         }),
-      })
-      const data = await res.json()
-      if (!res.ok) throw new Error(data.error || 'Request failed')
-      setResult(data)
+        fetch(`${API_BASE}/api/backtest/chart`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(body),
+        }),
+      ])
+
+      const stats = await statsRes.json()
+      if (!statsRes.ok) throw new Error(stats.error || 'Request failed')
+      setResult(stats)
+
+      const chart = await chartRes.json()
+      setChartData(chartRes.ok ? chart : null)
     } catch (err) {
       setError(err.message === 'Failed to fetch'
         ? 'Could not reach the backtest service. Is the backend running?'
         : err.message)
       setResult(null)
+      setChartData(null)
     } finally {
       setLoading(false)
     }
@@ -124,6 +141,8 @@ function BacktestView() {
               <span className="stat-label">Max drawdown</span>
             </div>
           </div>
+
+          {chartData && <BacktestChart data={chartData} />}
         </section>
       )}
     </main>
