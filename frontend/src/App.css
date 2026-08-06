@@ -67,9 +67,19 @@ h1 {
   color: var(--text);
 }
 
-.search input:focus {
+.search input:focus,
+.search select:focus {
   outline: 2px solid var(--accent);
   outline-offset: 1px;
+}
+
+.search select {
+  padding: 12px 14px;
+  font-size: 15px;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  background: var(--bg);
+  color: var(--text);
 }
 
 .search button {
@@ -97,6 +107,18 @@ h1 {
 .backtest-form input {
   flex: 1 1 120px;
   max-width: 140px;
+}
+
+.backtest-form select {
+  flex: 1 1 180px;
+  max-width: 200px;
+}
+
+.note code {
+  background: var(--surface);
+  border-radius: 4px;
+  padding: 1px 5px;
+  font-size: 12px;
 }
 
 .error {
@@ -368,7 +390,8 @@ h1 {
 
 .chart-legend {
   display: flex;
-  gap: 20px;
+  flex-wrap: wrap;
+  gap: 8px 20px;
   margin-bottom: 10px;
   font-size: 13px;
   color: var(--text-muted);
@@ -378,6 +401,7 @@ h1 {
   display: flex;
   align-items: center;
   gap: 7px;
+  white-space: nowrap;
 }
 
 .chart-legend-item strong {

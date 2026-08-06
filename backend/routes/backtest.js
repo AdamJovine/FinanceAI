@@ -21,10 +21,29 @@ function parseOutput(stdout) {
   };
 }
 
+const SIGNAL_PROVIDERS = ['neutral', 'online', 'rf'];
+
+// Python failures land here as either a raw message (`raise SystemExit("...")`,
+// e.g. missing API keys) or a full traceback ending in `SomeError: message`
+// (e.g. yfinance's ValueError on a bad ticker). Either way the last non-empty
+// line is the human-readable summary -- surface that as the primary error
+// instead of a generic "script failed", and strip the exception-class prefix
+// when there is one so the UI doesn't show Python internals.
+function describeError(stderr) {
+  const lines = stderr.trim().split('\n').map((l) => l.trim()).filter(Boolean);
+  if (!lines.length) return 'The script failed with no error output.';
+  const lastLine = lines[lines.length - 1];
+  const match = /^[\w.]+(?:Error|Exception|Exit):\s*(.+)$/.exec(lastLine);
+  return match ? match[1] : lastLine;
+}
+
 router.post('/', (req, res) => {
-  const { ticker, start, end, cash, commission } = req.body || {};
+  const { ticker, start, end, cash, commission, signalProvider } = req.body || {};
   if (!ticker || !ticker.trim()) {
     return res.status(400).json({ error: 'A ticker symbol is required.' });
+  }
+  if (signalProvider && !SIGNAL_PROVIDERS.includes(signalProvider)) {
+    return res.status(400).json({ error: `signalProvider must be one of: ${SIGNAL_PROVIDERS.join(', ')}.` });
   }
 
   const args = [SCRIPT_PATH, '--ticker', ticker.trim().toUpperCase()];
@@ -32,6 +51,7 @@ router.post('/', (req, res) => {
   if (end) args.push('--end', end);
   if (cash) args.push('--cash', String(cash));
   if (commission) args.push('--commission', String(commission));
+  if (signalProvider) args.push('--signal-provider', signalProvider);
 
   const proc = spawn(PYTHON, args);
   let stdout = '';
@@ -41,7 +61,7 @@ router.post('/', (req, res) => {
 
   proc.on('close', (code) => {
     if (code !== 0) {
-      return res.status(500).json({ error: 'Backtest script failed.', details: stderr.trim() });
+      return res.status(500).json({ error: describeError(stderr), details: stderr.trim() });
     }
     res.json(parseOutput(stdout));
   });
@@ -56,8 +76,8 @@ router.post('/chart', (req, res) => {
   if (!ticker || !ticker.trim()) {
     return res.status(400).json({ error: 'A ticker symbol is required.' });
   }
-  if (signalProvider && !['neutral', 'online'].includes(signalProvider)) {
-    return res.status(400).json({ error: "signalProvider must be 'neutral' or 'online'." });
+  if (signalProvider && !SIGNAL_PROVIDERS.includes(signalProvider)) {
+    return res.status(400).json({ error: `signalProvider must be one of: ${SIGNAL_PROVIDERS.join(', ')}.` });
   }
 
   const args = [CHART_SCRIPT_PATH, '--ticker', ticker.trim().toUpperCase()];
@@ -76,7 +96,7 @@ router.post('/chart', (req, res) => {
 
   proc.on('close', (code) => {
     if (code !== 0) {
-      return res.status(500).json({ error: 'Chart script failed.', details: stderr.trim() });
+      return res.status(500).json({ error: describeError(stderr), details: stderr.trim() });
     }
     try {
       res.json(JSON.parse(stdout));
