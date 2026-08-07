@@ -5,9 +5,9 @@ import BacktestChart from './BacktestChart'
 const API_BASE = 'http://localhost:5001'
 
 const MODELS = [
+  { value: 'finbert', label: 'FinBERT (news only)', color: 'var(--chart-finbert)' },
   { value: 'online', label: 'Sentiment analyzer (live)', color: 'var(--chart-strategy)' },
   { value: 'rf', label: 'Random forest (live)', color: 'var(--chart-rf)' },
-  { value: 'finbert', label: 'FinBERT (news only)', color: 'var(--chart-finbert)' },
 ]
 
 function sentimentLabel(score) {
