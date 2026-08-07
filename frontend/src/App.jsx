@@ -23,6 +23,8 @@ function App() {
   return (
     <div className="app">
       <header className="nav-bar">
+        <div className="nav-bar-spacer" />
+        <span className="app-title">FinanceAI</span>
         <button
           className="nav-menu-toggle"
           onClick={() => setMenuOpen((open) => !open)}
@@ -46,9 +48,11 @@ function App() {
           </button>
         ))}
       </div>
-      {view === 'sentiment' && <SentimentView />}
-      {view === 'backtesting' && <BacktestView />}
-      {view === 'portfolio' && <PortfolioView />}
+      <div className="view-fade" key={view}>
+        {view === 'sentiment' && <SentimentView />}
+        {view === 'backtesting' && <BacktestView />}
+        {view === 'portfolio' && <PortfolioView />}
+      </div>
     </div>
   )
 }
