@@ -51,6 +51,7 @@ function PriceLineChart({ data }) {
 
   const n = data.length
   const values = data.map((d) => d.close)
+  const trendColor = values[values.length - 1] >= values[0] ? 'var(--positive)' : 'var(--negative)'
 
   const { yMin, yMax } = useMemo(() => {
     const min = Math.min(...values)
@@ -114,12 +115,12 @@ function PriceLineChart({ data }) {
           </text>
         ))}
 
-        <path d={linePath} className="chart-line" stroke="var(--accent)" />
+        <path d={linePath} className="chart-line" stroke={trendColor} />
 
         {hoverIdx !== null && (
           <>
             <line x1={hoverX} x2={hoverX} y1={PAD.top} y2={H - PAD.bottom} className="chart-crosshair" />
-            <circle cx={hoverX} cy={yAt(values[hoverIdx])} r={4} className="chart-dot" fill="var(--accent)" />
+            <circle cx={hoverX} cy={yAt(values[hoverIdx])} r={4} className="chart-dot" fill={trendColor} />
           </>
         )}
       </svg>
