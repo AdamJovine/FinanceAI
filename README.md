@@ -79,7 +79,7 @@ python3 apple_trader.py             # sentiment vs. RF, AAPL-only, periodic buy/
 
 ### My Portfolio
 
-Simulated holdings, totals, and a 30-day value chart —- mock data, not a real brokerage connection.
+Simulated holdings, totals, and a 30-day value chart — mock data, not a real brokerage connection.
 
 ## API endpoints (backend)
 
