@@ -76,6 +76,19 @@
   transition: transform 0.28s ease;
 }
 
+.nav-menu-title {
+  position: absolute;
+  top: 18px;
+  left: 20px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  font-family: var(--font-body);
+  font-size: 24px;
+  font-weight: 700;
+  color: var(--text);
+}
+
 .nav-menu.open {
   transform: translateX(0);
 }

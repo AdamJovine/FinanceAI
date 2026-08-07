@@ -39,6 +39,7 @@ function App() {
 
       <div className={`nav-menu-backdrop ${menuOpen ? 'open' : ''}`} onClick={() => setMenuOpen(false)} />
       <div className={`nav-menu ${menuOpen ? 'open' : ''}`}>
+        <span className="nav-menu-title">Menu</span>
         {NAV_ITEMS.map(({ key, label, icon: Icon }) => (
           <button
             key={key}
