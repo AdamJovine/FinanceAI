@@ -25,15 +25,17 @@ function App() {
       <header className="nav-bar">
         <div className="nav-bar-spacer" />
         <span className="app-title">FinanceAI</span>
-        <button
-          className="nav-menu-toggle"
-          onClick={() => setMenuOpen((open) => !open)}
-          aria-label={menuOpen ? 'Close menu' : 'Open menu'}
-          aria-expanded={menuOpen}
-        >
-          {menuOpen ? <X size={20} /> : <Menu size={20} />}
-        </button>
+        <div className="nav-bar-spacer" />
       </header>
+
+      <button
+        className="nav-menu-toggle"
+        onClick={() => setMenuOpen((open) => !open)}
+        aria-label={menuOpen ? 'Close menu' : 'Open menu'}
+        aria-expanded={menuOpen}
+      >
+        {menuOpen ? <X size={20} /> : <Menu size={20} />}
+      </button>
 
       <div className={`nav-menu-backdrop ${menuOpen ? 'open' : ''}`} onClick={() => setMenuOpen(false)} />
       <div className={`nav-menu ${menuOpen ? 'open' : ''}`}>
