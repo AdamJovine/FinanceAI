@@ -117,11 +117,13 @@ router.get('/:ticker', async (req, res) => {
   const sentiment_history = generateSentimentHistory(rand, 14);
   const mention_volume_history = generateMentionVolumeHistory(rand, 14);
   const simulatedBaseline = sentiment_history[sentiment_history.length - 1];
-  const mentions = mention_volume_history.reduce((sum, n) => sum + n, 0);
-  const breakdown = computeBreakdown(simulatedBaseline, rand);
 
   let score = simulatedBaseline;
   let scoreSource = 'fallback_mock';
+  let mentions = mention_volume_history.reduce((sum, n) => sum + n, 0);
+  let mentionsSource = 'simulated';
+  let breakdown = computeBreakdown(simulatedBaseline, rand);
+  let breakdownSource = 'simulated';
   let platform_breakdown = {};
   let platform_breakdown_source = {};
   let sample_posts = [];
@@ -136,6 +138,14 @@ router.get('/:ticker', async (req, res) => {
     sample_posts = buildSamplePosts(real);
     sample_posts_source = 'real';
     scoreSource = 'real';
+
+    mentions = (real.news?.article_count || 0) + (real.reddit?.mention_count || 0);
+    mentionsSource = 'real';
+
+    const positive = Math.round(real.breakdown.positive * 100);
+    const negative = Math.round(real.breakdown.negative * 100);
+    breakdown = { positive, neutral: 100 - positive - negative, negative };
+    breakdownSource = 'real';
   } catch (err) {
     error = err.message;
   }
@@ -154,10 +164,10 @@ router.get('/:ticker', async (req, res) => {
     source: {
       score: scoreSource,
       platform_breakdown: platform_breakdown_source,
-      breakdown: 'simulated',
+      breakdown: breakdownSource,
       sentiment_history: 'simulated',
       mention_volume_history: 'simulated',
-      confidence: 'simulated',
+      confidence: mentionsSource,
       sample_posts: sample_posts_source,
     },
   };

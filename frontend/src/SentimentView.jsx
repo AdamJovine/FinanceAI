@@ -10,12 +10,6 @@ function sentimentLabel(score) {
   return 'neutral'
 }
 
-const SOURCE_LABELS = { real: 'real', simulated: 'simulated', fallback_mock: 'fallback mock', unavailable: 'unavailable' }
-
-function SourceTag({ source }) {
-  return <span className={`source-tag source-tag-${source}`}>{SOURCE_LABELS[source] || source}</span>
-}
-
 function SentimentView() {
   const [ticker, setTicker] = useState('')
   const [result, setResult] = useState(null)
@@ -69,7 +63,7 @@ function SentimentView() {
   }
 
   return (
-    <main className="page">
+    <main className="page sentiment-page">
       <h1>Meme Stock Sentiment</h1>
       <p className="subtitle">Type a ticker to see real Reddit + news sentiment. Trend charts and per-platform breakdown beyond Reddit are still simulated.</p>
 
@@ -106,102 +100,108 @@ function SentimentView() {
 
           {result.note && <p className="note">{result.note}</p>}
 
-          <div className="stats">
-            <div className="stat">
-              <span
-                className={`stat-value ${
-                  result.overall_sentiment === 'bullish' ? 'gain-positive' : result.overall_sentiment === 'bearish' ? 'gain-negative' : ''
-                }`}
-              >
-                {result.score}
-              </span>
-              <span className="stat-label">
-                <span className="stat-icon-chip"><TrendingUp size={12} /></span>
-                Sentiment score <SourceTag source={result.source.score} />
-              </span>
-              <span className="stat-caption">based on {result.confidence.toLocaleString()} mentions</span>
-            </div>
-            <div className="stat">
-              <span className="stat-value">{result.mentions.toLocaleString()}</span>
-              <span className="stat-label">
-                <span className="stat-icon-chip"><Users size={12} /></span>
-                Mentions <SourceTag source={result.source.confidence} />
-              </span>
-            </div>
-          </div>
-
-          <div className="chart-block price-chart-block">
-            <h3>
-              <LineChart size={13} /> Price (last 90 days) <span className="source-tag source-tag-real">real</span>
-            </h3>
-            {priceLoading && <p className="stat-caption">Loading price data…</p>}
-            {priceError && <p className="error">Could not load price data: {priceError}</p>}
-            {priceData && !priceError && (
-              <>
-                <PriceLineChart data={priceData} />
-                <p className="stat-caption">
-                  {priceData[0].date} → {priceData[priceData.length - 1].date} · close ${priceData[priceData.length - 1].close.toFixed(2)}
-                </p>
-              </>
-            )}
-          </div>
-
-          <div className="breakdown">
-            <h3>
-              Sentiment breakdown <SourceTag source={result.source.breakdown} />
-            </h3>
-            {['positive', 'neutral', 'negative'].map((key) => (
-              <div className="breakdown-row" key={key}>
-                <span className="breakdown-label">{key}</span>
-                <div className="bar-track">
-                  <div
-                    className={`bar-fill bar-${key}`}
-                    style={{ width: `${result.breakdown[key]}%` }}
-                  />
-                </div>
-                <span className="breakdown-value">{result.breakdown[key]}%</span>
-              </div>
-            ))}
-          </div>
-
-          <div className="charts">
-            <div className="chart-block">
-              <h3>
-                14-day sentiment trend <SourceTag source={result.source.sentiment_history} />
-              </h3>
-              <SentimentSparkline data={result.sentiment_history} />
-            </div>
-            <div className="chart-block">
-              <h3>
-                14-day mention volume <SourceTag source={result.source.mention_volume_history} />
-              </h3>
-              <VolumeSparkline data={result.mention_volume_history} />
-            </div>
-          </div>
-
-          <div className="platform-breakdown">
-            <h3>By platform</h3>
-            {Object.entries(result.platform_breakdown).map(([platform, value]) => (
-              <div className="breakdown-row" key={platform}>
-                <span className="breakdown-label">
-                  {platform} <SourceTag source={result.source.platform_breakdown[platform]} />
-                </span>
-                <div className="bar-track">
-                  <div
-                    className={`bar-fill bar-${
-                      sentimentLabel(value) === 'bullish' ? 'positive' : sentimentLabel(value) === 'bearish' ? 'negative' : 'neutral'
+          <div className="sentiment-grid">
+            <div className="sentiment-left-col">
+              <div className="stats">
+                <div className="stat">
+                  <span
+                    className={`stat-value ${
+                      result.overall_sentiment === 'bullish' ? 'gain-positive' : result.overall_sentiment === 'bearish' ? 'gain-negative' : ''
                     }`}
-                    style={{ width: `${Math.round(((value + 1) / 2) * 100)}%` }}
-                  />
+                  >
+                    {result.score}
+                  </span>
+                  <span className="stat-label">
+                    <span className="stat-icon-chip"><TrendingUp size={12} /></span>
+                    Sentiment score
+                  </span>
+                  <span className="stat-caption">based on {result.confidence.toLocaleString()} mentions</span>
                 </div>
-                <span className="breakdown-value">{value}</span>
+                <div className="stat">
+                  <span className="stat-value">{result.mentions.toLocaleString()}</span>
+                  <span className="stat-label">
+                    <span className="stat-icon-chip"><Users size={12} /></span>
+                    Mentions
+                  </span>
+                </div>
               </div>
-            ))}
+
+              <div className="breakdown">
+                <h3>
+                  Sentiment breakdown
+                </h3>
+                {['positive', 'neutral', 'negative'].map((key) => (
+                  <div className="breakdown-row" key={key}>
+                    <span className="breakdown-label">{key}</span>
+                    <div className="bar-track">
+                      <div
+                        className={`bar-fill bar-${key}`}
+                        style={{ width: `${result.breakdown[key]}%` }}
+                      />
+                    </div>
+                    <span className="breakdown-value">{result.breakdown[key]}%</span>
+                  </div>
+                ))}
+              </div>
+
+              <div className="platform-breakdown">
+                <h3>By platform</h3>
+                {Object.entries(result.platform_breakdown).map(([platform, value]) => (
+                  <div className="breakdown-row" key={platform}>
+                    <span className="breakdown-label">
+                      {platform}
+                    </span>
+                    <div className="bar-track">
+                      <div
+                        className={`bar-fill bar-${
+                          sentimentLabel(value) === 'bullish' ? 'positive' : sentimentLabel(value) === 'bearish' ? 'negative' : 'neutral'
+                        }`}
+                        style={{ width: `${Math.round(((value + 1) / 2) * 100)}%` }}
+                      />
+                    </div>
+                    <span className="breakdown-value">{value}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            <div className="sentiment-right-col">
+              <div className="chart-block price-chart-block">
+                <h3>
+                  <LineChart size={13} /> Price (last 90 days)
+                </h3>
+                {priceLoading && <p className="stat-caption">Loading price data…</p>}
+                {priceError && <p className="error">Could not load price data: {priceError}</p>}
+                {priceData && !priceError && (
+                  <>
+                    <PriceLineChart data={priceData} />
+                    <p className="stat-caption">
+                      {priceData[0].date} → {priceData[priceData.length - 1].date} · close ${priceData[priceData.length - 1].close.toFixed(2)}
+                    </p>
+                  </>
+                )}
+              </div>
+
+              <div className="charts">
+                <div className="chart-block">
+                  <h3>
+                    14-day sentiment trend
+                  </h3>
+                  <SentimentSparkline data={result.sentiment_history} />
+                </div>
+                <div className="chart-block">
+                  <h3>
+                    14-day mention volume
+                  </h3>
+                  <VolumeSparkline data={result.mention_volume_history} />
+                </div>
+              </div>
+            </div>
           </div>
 
           <div className="posts">
             <h3>
-              Sample posts <SourceTag source={result.source.sample_posts} />
+              Sample posts
             </h3>
             {result.sample_posts.length === 0 && (
               <p className="stat-caption">No real posts found for this ticker right now.</p>

@@ -120,7 +120,7 @@ h1 {
 }
 
 .search .input-wrap {
-  flex: 0 1 160px;
+  flex: 0 1 220px;
 }
 
 .search .input-icon-wrap input {
@@ -316,6 +316,90 @@ h1 {
 
 @media (max-width: 860px) {
   .backtest-results-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+.sentiment-page {
+  max-width: 1280px;
+  text-align: left;
+}
+
+.sentiment-page h1,
+.sentiment-page .subtitle {
+  text-align: left;
+}
+
+.sentiment-page .search {
+  justify-content: flex-start;
+}
+
+.sentiment-page .results {
+  background: none;
+  box-shadow: none;
+  padding: 0;
+  margin-top: 40px;
+}
+
+.sentiment-page .sentiment-grid {
+  display: grid;
+  grid-template-columns: 320px 1fr;
+  gap: 20px;
+  align-items: start;
+  margin-bottom: 28px;
+}
+
+.sentiment-page .sentiment-left-col {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.sentiment-page .sentiment-left-col .stats {
+  flex-direction: column;
+  margin: 0;
+}
+
+.sentiment-page .sentiment-left-col .breakdown,
+.sentiment-page .sentiment-left-col .platform-breakdown {
+  background: var(--surface-2);
+  border-radius: 12px;
+  padding: 16px 18px;
+  margin-bottom: 0;
+}
+
+.sentiment-page .sentiment-right-col {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.sentiment-page .price-chart-block {
+  background: var(--surface);
+  border-radius: 14px;
+  padding: 24px;
+  box-shadow: 0 1px 0 rgba(255, 255, 255, 0.03) inset, 0 20px 40px rgba(0, 0, 0, 0.35);
+  margin-bottom: 0;
+}
+
+.sentiment-page .charts {
+  margin-bottom: 0;
+}
+
+.sentiment-page .charts .chart-block {
+  background: var(--surface-2);
+  border-radius: 12px;
+  padding: 16px 18px;
+}
+
+.sentiment-page .posts ul {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 12px;
+}
+
+@media (max-width: 900px) {
+  .sentiment-page .sentiment-grid {
     grid-template-columns: 1fr;
   }
 }

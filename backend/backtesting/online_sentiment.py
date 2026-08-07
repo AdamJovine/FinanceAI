@@ -14,10 +14,13 @@ REDDIT_SYSTEM_PROMPT = (
     "comments more heavily than old or low-engagement ones. "
     "After searching, respond with ONLY a JSON object as your final line, with nothing after "
     'it: {"sentiment": <float -1.0 to 1.0>, "mention_count": <int>, "summary": <string>, '
+    '"breakdown": {"positive": <int 0-100>, "neutral": <int 0-100>, "negative": <int 0-100>}, '
     '"posts": [{"text": <a short real quote or close paraphrase from an actual post/comment '
     'you found, 1-2 sentences>, "url": <the reddit.com permalink you found it at>, "sentiment": '
     '"positive"|"negative"|"neutral"}, ...]}. '
     "-1.0 is maximally bearish, 0.0 is neutral or no clear signal found, 1.0 is maximally bullish. "
+    '"breakdown" is your estimate of the split across ALL the discussion you found (not just the '
+    "sampled posts below), roughly summing to 100. "
     'Include up to 4 entries in "posts" -- every one MUST be grounded in a real search result with '
     "a real URL; never invent a post or a URL. If you found fewer than 4 usable posts, include only "
     "the real ones -- an empty list is correct if none were found."
@@ -72,16 +75,26 @@ def fetch_perigon_news_sentiment(ticker, api_key, as_of_date=None, days=3, page_
     articles = response.json().get("articles", [])
 
     scored = []
+    breakdown_totals = {"positive": 0.0, "negative": 0.0, "neutral": 0.0}
     for article in articles:
         sentiment = article.get("sentiment") or {}
         pos, neg = sentiment.get("positive"), sentiment.get("negative")
         if pos is None or neg is None:
             continue
         scored.append(pos - neg)
+        breakdown_totals["positive"] += pos
+        breakdown_totals["negative"] += neg
+        breakdown_totals["neutral"] += sentiment.get("neutral") or 0
 
     score = sum(scored) / len(scored) if scored else 0.0
+    if scored:
+        breakdown = {k: v / len(scored) for k, v in breakdown_totals.items()}
+    else:
+        breakdown = {"positive": 0.0, "neutral": 1.0, "negative": 0.0}
+
     return {
         "score": max(-1.0, min(1.0, score)),
+        "breakdown": breakdown,
         "article_count": len(articles),
         "scored_count": len(scored),
         "as_of_date": anchor.isoformat(),
@@ -158,6 +171,22 @@ def _parse_reddit_posts(raw_posts):
     return posts
 
 
+def _parse_reddit_breakdown(raw):
+    default = {"positive": 0.0, "neutral": 1.0, "negative": 0.0}
+    if not isinstance(raw, dict):
+        return default
+    try:
+        pos = max(0.0, float(raw.get("positive", 0)))
+        neu = max(0.0, float(raw.get("neutral", 0)))
+        neg = max(0.0, float(raw.get("negative", 0)))
+    except (TypeError, ValueError):
+        return default
+    total = pos + neu + neg
+    if total <= 0:
+        return default
+    return {"positive": pos / total, "neutral": neu / total, "negative": neg / total}
+
+
 def _parse_reddit_response(text):
     try:
         match = re.search(r"\{.*\}", text, re.DOTALL)
@@ -174,6 +203,7 @@ def _parse_reddit_response(text):
         "score": sentiment,
         "mention_count": payload.get("mention_count", 0),
         "summary": payload.get("summary", ""),
+        "breakdown": _parse_reddit_breakdown(payload.get("breakdown")),
         "posts": _parse_reddit_posts(payload.get("posts")),
     }
 
@@ -190,8 +220,13 @@ def fetch_combined_sentiment(ticker, openai_api_key, perigon_api_key, as_of_date
     news = fetch_perigon_news_sentiment(ticker, perigon_api_key, as_of_date=as_of_date)
     reddit = fetch_reddit_sentiment(ticker, openai_api_key, as_of_date=as_of_date, model=openai_model)
     combined = news_weight * news["score"] + reddit_weight * reddit["score"]
+    breakdown = {
+        key: news_weight * news["breakdown"][key] + reddit_weight * reddit["breakdown"][key]
+        for key in ("positive", "neutral", "negative")
+    }
     return {
         "score": max(-1.0, min(1.0, combined)),
+        "breakdown": breakdown,
         "as_of_date": (as_of_date or date.today()).isoformat(),
         "news": news,
         "reddit": reddit,
