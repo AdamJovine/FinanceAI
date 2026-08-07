@@ -13,8 +13,17 @@ class SentimentStrategy(bt.Strategy):
 
     params = (
         ("signal_fn", None),
-        ("buy_threshold", 0.5),
-        ("sell_threshold", -0.5),
+        # 0.5 sounds like a natural "conviction" bar, but none of the real
+        # signal_fn implementations (online/rf/finbert) actually produce
+        # scores that extreme in practice -- rf_signal's (prob-0.5)*2 rarely
+        # strays past +-0.3, finbert_signal averages across many mixed-tone
+        # articles and pulls toward 0, and even online_signal usually landed
+        # in the 0.3-0.4 range in testing. At 0.5 the strategy just sits in
+        # cash the whole backtest for most tickers -- not "no opinion", just
+        # a threshold that was never checked against what these models
+        # actually output.
+        ("buy_threshold", 0.2),
+        ("sell_threshold", -0.2),
         ("stake_pct", 0.95),
     )
 
