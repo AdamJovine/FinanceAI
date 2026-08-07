@@ -4,7 +4,7 @@ A trading dashboard with three tabs — live sentiment analysis, strategy backte
 
 ## Setup
 
-### 1. API keys:
+### 1. API keys
 
 Create a `.env` file at the **repo root** (not inside `backend/`):
 
