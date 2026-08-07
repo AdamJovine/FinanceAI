@@ -30,12 +30,18 @@ class SentimentStrategy(bt.Strategy):
     def __init__(self):
         self.signal_fn = self.p.signal_fn or neutral_signal
         self.equity_curve = []
+        # The signal from the first bar -- the read that drove the strategy's
+        # opening decision, surfaced to callers (e.g. the UI) as a summary of
+        # "what did the model think" for the whole run.
+        self.first_signal = None
 
     def next(self):
         data = self.datas[0]
         date = data.datetime.date(0)
         ticker = data._name
         signal = self.signal_fn(ticker, date, data)
+        if self.first_signal is None:
+            self.first_signal = signal
 
         self.equity_curve.append((date, self.broker.getvalue()))
 

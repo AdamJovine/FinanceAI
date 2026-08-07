@@ -73,6 +73,7 @@ def run_backtest(ticker="AAPL", start_date=None, end_date=None, cash=100000.0, c
         print(f"Return:        {(end_value / start_value - 1) * 100:.2f}%")
         print(f"Sharpe ratio:  {strat.analyzers.sharpe.get_analysis().get('sharperatio')}")
         print(f"Max drawdown:  {strat.analyzers.drawdown.get_analysis().max.drawdown:.2f}%")
+        print(f"Signal score:  {strat.first_signal}")
 
     return cerebro, results
 

@@ -119,6 +119,14 @@ h1 {
   align-items: flex-end;
 }
 
+.search .input-wrap {
+  flex: 0 1 160px;
+}
+
+.search .input-icon-wrap input {
+  padding-left: 40px;
+}
+
 .input-wrap {
   flex: 1;
   max-width: 260px;
@@ -185,29 +193,131 @@ h1 {
   cursor: default;
 }
 
-.backtest-form {
+.backtest-page {
+  max-width: 1280px;
+  text-align: left;
+}
+
+.backtest-page h1,
+.backtest-page .subtitle,
+.backtest-page .note {
+  text-align: left;
+}
+
+.backtest-toolbar {
+  display: flex;
+  align-items: flex-end;
   flex-wrap: wrap;
-  max-width: 480px;
-  margin: 0 auto;
+  gap: 12px;
 }
 
-.backtest-form input {
-  flex: 1 1 120px;
-  max-width: 140px;
+.backtest-toolbar input,
+.backtest-toolbar select {
+  padding: 13px 16px;
+  font-size: 15px;
+  font-family: var(--font-body);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: var(--surface-2);
+  color: var(--text);
 }
 
-.backtest-form .input-wrap {
-  flex: 1 1 170px;
-  max-width: 190px;
+.backtest-toolbar .input-wrap {
+  flex: 0 1 160px;
 }
 
-.backtest-form .input-wrap input {
-  max-width: none;
+.backtest-toolbar .input-wrap input,
+.backtest-toolbar .input-wrap select {
+  width: 100%;
 }
 
-.backtest-form select {
-  flex: 1 1 180px;
-  max-width: 200px;
+.backtest-toolbar .input-icon-wrap input {
+  padding-left: 40px;
+}
+
+.backtest-toolbar-submit {
+  padding: 13px 24px;
+  font-size: 16px;
+  font-weight: 700;
+  font-family: var(--font-body);
+  border: none;
+  border-radius: 8px;
+  background: var(--accent);
+  color: var(--on-accent);
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.backtest-toolbar-submit:disabled {
+  opacity: 0.6;
+  cursor: default;
+}
+
+.backtest-results {
+  margin-top: 40px;
+}
+
+.backtest-results-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 16px;
+}
+
+.backtest-results-header h2 {
+  margin: 0;
+  font-size: 22px;
+  color: var(--text);
+}
+
+.backtest-results-grid {
+  display: grid;
+  grid-template-columns: 340px 700px;
+  gap: 20px;
+}
+
+.backtest-stats-col {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.backtest-stats-col .stat {
+  flex: none;
+}
+
+.backtest-chart-col {
+  background: var(--surface);
+  border-radius: 14px;
+  padding: 20px;
+  box-shadow: 0 1px 0 rgba(255, 255, 255, 0.03) inset, 0 20px 40px rgba(0, 0, 0, 0.35);
+  display: flex;
+}
+
+.backtest-chart-col .chart {
+  margin-top: 0;
+  width: 100%;
+}
+
+.chart-placeholder {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  color: var(--text-muted);
+  text-align: center;
+}
+
+.chart-placeholder-icon {
+  opacity: 0.5;
+}
+
+@media (max-width: 860px) {
+  .backtest-results-grid {
+    grid-template-columns: 1fr;
+  }
 }
 
 .note code {

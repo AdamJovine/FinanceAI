@@ -10,6 +10,7 @@ const CHART_SCRIPT_PATH = path.join(__dirname, '..', 'backtesting', 'benchmark_c
 function parseOutput(stdout) {
   const grab = (re) => re.exec(stdout)?.[1]?.trim();
   const sharpeRaw = grab(/Sharpe ratio:\s+(.+)/);
+  const signalRaw = grab(/Signal score:\s+(.+)/);
   return {
     ticker: grab(/Ticker:\s+(.+)/),
     period: grab(/Period:\s+(.+)/),
@@ -18,6 +19,7 @@ function parseOutput(stdout) {
     return_pct: parseFloat(grab(/Return:\s+([\d.-]+)%/)),
     sharpe_ratio: !sharpeRaw || sharpeRaw === 'None' ? null : parseFloat(sharpeRaw),
     max_drawdown_pct: parseFloat(grab(/Max drawdown:\s+([\d.-]+)%/)),
+    signal_score: !signalRaw || signalRaw === 'None' ? null : parseFloat(signalRaw),
   };
 }
 
