@@ -24,7 +24,10 @@
 
   font: 16px/1.5 var(--font-body);
   color: var(--text);
-  background: var(--bg);
+  /* Rubber-band/overscroll bounce reveals this element's background, not
+     the body's -- green here so scrolling past the top shows the header
+     color continuing, not a flash of black. */
+  background: var(--accent);
   -webkit-font-smoothing: antialiased;
 }
 
@@ -34,6 +37,8 @@
 
 body {
   margin: 0;
+  background: var(--bg);
+  min-height: 100vh;
 }
 
 h1,
