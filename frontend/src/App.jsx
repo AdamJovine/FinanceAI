@@ -1,38 +1,51 @@
 import { useState } from 'react'
-import { Activity, History, Briefcase } from 'lucide-react'
+import { Activity, History, Briefcase, Menu, X } from 'lucide-react'
 import './App.css'
 import SentimentView from './SentimentView'
 import BacktestView from './BacktestView'
 import PortfolioView from './PortfolioView'
 
+const NAV_ITEMS = [
+  { key: 'sentiment', label: 'Sentiment', icon: Activity },
+  { key: 'backtesting', label: 'Backtesting', icon: History },
+  { key: 'portfolio', label: 'My Portfolio', icon: Briefcase },
+]
+
 function App() {
   const [view, setView] = useState('sentiment')
+  const [menuOpen, setMenuOpen] = useState(false)
+
+  function selectView(key) {
+    setView(key)
+    setMenuOpen(false)
+  }
 
   return (
     <div className="app">
-      <nav className="nav">
+      <header className="nav-bar">
         <button
-          className={`nav-tab ${view === 'sentiment' ? 'active' : ''}`}
-          onClick={() => setView('sentiment')}
+          className="nav-menu-toggle"
+          onClick={() => setMenuOpen((open) => !open)}
+          aria-label={menuOpen ? 'Close menu' : 'Open menu'}
+          aria-expanded={menuOpen}
         >
-          <Activity size={15} />
-          Sentiment
+          {menuOpen ? <X size={20} /> : <Menu size={20} />}
         </button>
-        <button
-          className={`nav-tab ${view === 'backtesting' ? 'active' : ''}`}
-          onClick={() => setView('backtesting')}
-        >
-          <History size={15} />
-          Backtesting
-        </button>
-        <button
-          className={`nav-tab ${view === 'portfolio' ? 'active' : ''}`}
-          onClick={() => setView('portfolio')}
-        >
-          <Briefcase size={15} />
-          My Portfolio
-        </button>
-      </nav>
+      </header>
+
+      <div className={`nav-menu-backdrop ${menuOpen ? 'open' : ''}`} onClick={() => setMenuOpen(false)} />
+      <div className={`nav-menu ${menuOpen ? 'open' : ''}`}>
+        {NAV_ITEMS.map(({ key, label, icon: Icon }) => (
+          <button
+            key={key}
+            className={`nav-menu-item ${view === key ? 'active' : ''}`}
+            onClick={() => selectView(key)}
+          >
+            <Icon size={16} />
+            {label}
+          </button>
+        ))}
+      </div>
       {view === 'sentiment' && <SentimentView />}
       {view === 'backtesting' && <BacktestView />}
       {view === 'portfolio' && <PortfolioView />}
